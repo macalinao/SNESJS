@@ -1,0 +1,25 @@
+---
+source_directory: source
+build_directory: build
+
+layout: together
+
+header: HEADER.txt
+
+builds:
+  src:
+    packer: false
+  min:
+    shrink_vars: true
+    private: true
+
+packages:
+  snesjs:
+    files:
+    - Constants
+    - cpu/ALU
+    - cpu/CPU
+    - cpu/CPUOPS
+    - cpu/Registers
+    - util/Bits
+    - util/MiscUtils
