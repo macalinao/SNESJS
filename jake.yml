@@ -16,10 +16,15 @@ builds:
 packages:
   snesjs:
     files:
+    - SNESJS
     - Constants
-    - cpu/ALU
+    # CPU
     - cpu/CPU
+    - cpu/ALU
     - cpu/CPUOPS
+    - cpu/MMIO
     - cpu/Registers
+    - cpu/Status
+    # Util
     - util/Bits
     - util/MiscUtils

@@ -50,7 +50,7 @@ SNESJS.CPU.prototype.step = function(clocks) {
 	snes.smp.clock -= clocks * snes.smp.frequency;
 	snes.ppu.clock -= clocks;
 	for (var i = 0; i < snes.coprocessors.length; i++) {
-		Processor chip = coprocessors[i];
+		var chip = coprocessors[i];
 		chip.clock -= clocks * chip.frequency;
 	}
 }
@@ -65,6 +65,53 @@ SNESJS.CPU.prototype.synchronize_ppu = function() {
 	while(snes.ppu.clock < 0) {
 		snes.ppu.enter();
 	}
+}
+
+SNESJS.CPU.prototype.synchronize_coprocessors = function() {
+	for (var i = 0; i < cpu.coprocessors.length; i++) {
+		var chip = cpu.coprocessors[i];
+		if (chip.clock < 0) {
+			//sync
+		}
+	}
+}
+
+SNESJS.CPU.prototype.synchronize_controllers = function() {
+
+}
+
+SNESJS.CPU.prototype.enter = function() {
+	while(true) {
+		if (status.nmi_pending) {
+			status.nmi_pending = false;
+			this.regs.vector = (this.regs.e == false ? 0xffee : 0xfffe);
+			this.op_irq();
+		}
+
+		if (status.irq_pending) {
+			status.irq_pending = false;
+			this.regs.vector = (this.regs.e == false ? 0xffee : 0xfffe);
+			this.op_irq();
+		}
+
+		this.op_step();
+	}
+}
+
+SNESJS.CPU.prototype.op_step = function() {
+	this.optable[this.op_readpc()]();
+}
+
+SNESJS.CPU.prototype.cpu_wram_reader = function(addr) {
+	return this.wram[addr];
+}
+
+SNESJS.CPU.prototype.cpu_wram_writer = function(addr, data) {
+	this.cpu.wram[addr] = data;
+}
+
+SNESJS.CPU.prototype.enable = function() {
+	snes.bus.map
 }
 
 SNESJS.CPU.prototype.last_cycle = function() {

@@ -1,0 +1,3 @@
+SNESJS = function() {
+    
+}
