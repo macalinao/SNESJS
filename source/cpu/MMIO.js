@@ -39,7 +39,7 @@ SNESJS.CPU.prototype.mmio_read = function(addr) {
 
         case 0x4210:
             var result = this.regs.mdr & 0x70;
-            result |= (Convert.ToInt32(cpu_status_nmi_line) << 7);
+            result |= ((cpu_status_nmi_line ? 1 : 0) << 7);
             result |= 0x02;  //CPU revision
             cpu_status_nmi_line = false;
             return result;
