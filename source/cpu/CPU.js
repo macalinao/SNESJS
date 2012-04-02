@@ -124,7 +124,7 @@ SNESJS.CPU.prototype.cpu_wram_writer = function(addr, data) {
 }
 
 SNESJS.CPU.prototype.enable = function() {
-	snes.bus.map
+	snes.bus.map 
 }
 
 
