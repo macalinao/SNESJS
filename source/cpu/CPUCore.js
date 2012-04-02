@@ -30,13 +30,13 @@ SNESJS.CPU.prototype.op_io_cond2 = function() {
 	}
 }
 
-SNESJS.CPU.prototype.op_io_cond4 = function(uint16 x, uint16 y) {
+SNESJS.CPU.prototype.op_io_cond4 = function(x, y) {
 	if (!this.regs.p.x || (x & 0xff00) != (y & 0xff00)) {
 		this.op_io();
 	}
 }
 
-SNESJS.CPU.prototype.op_io_cond6 = function(uint16 addr) {
+SNESJS.CPU.prototype.op_io_cond6 = function(addr) {
 	if (this.regs.e && (this.regs.pc.w & 0xff00) != (addr & 0xff00)) {
 		this.op_io();
 	}
@@ -53,11 +53,11 @@ SNESJS.CPU.prototype.op_irq = function() {
   this.op_writestack(this.regs.pc.h);
   this.op_writestack(this.regs.pc.l);
   this.op_writestack(this.regs.e ? (this.regs.p & ~0x10) : this.regs.p);
-  rd.l = this.op_read(this.regs.vector + 0);
+  this.rd.l = this.op_read(this.regs.vector + 0);
   this.regs.pc.b = 0x00;
   this.regs.p.i  = 1;
   this.regs.p.d  = 0;
-  rd.h = this.op_read(this.regs.vector + 1);
-  this.regs.pc.w = rd.w;
+  this.rd.h = this.op_read(this.regs.vector + 1);
+  this.regs.pc.w = this.rd.w;
 }
 
