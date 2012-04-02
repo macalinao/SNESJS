@@ -22,6 +22,7 @@ packages:
     - cpu/CPU
     - cpu/ALU
     - cpu/Channel
+    - cpu/CPUCore
     - cpu/CPUOPS
     - cpu/DMA
     - cpu/Memory

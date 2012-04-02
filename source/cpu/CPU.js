@@ -10,7 +10,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with SNESJS.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -42,26 +42,18 @@ SNESJS.CPU = function(snes) {
 	this._cpu_version = 0;
 
 	this.channel = [
-		new SNESJS.CPU.Channel(),
-		new SNESJS.CPU.Channel(),
-		new SNESJS.CPU.Channel(),
-		new SNESJS.CPU.Channel(),
-		new SNESJS.CPU.Channel(),
-		new SNESJS.CPU.Channel(),
-		new SNESJS.CPU.Channel(),
-		new SNESJS.CPU.Channel()
-	];
+	new SNESJS.CPU.Channel(), new SNESJS.CPU.Channel(), new SNESJS.CPU.Channel(), new SNESJS.CPU.Channel(), new SNESJS.CPU.Channel(), new SNESJS.CPU.Channel(), new SNESJS.CPU.Channel(), new SNESJS.CPU.Channel()];
 
 	this.port_data = [0, 0, 0, 0];
 
-	this.status = new SNESJS.CPU.Status();
+	this.this.status = new SNESJS.CPU.this.status();
 
 	this.initialize_opcode_table();
 }
 
 SNESJS.CPU.prototype.step = function(clocks) {
-	snes.smp.clock -= clocks * snes.smp.frequency;
-	snes.ppu.clock -= clocks;
+	this.snes.smp.clock -= clocks * this.snes.smp.frequency;
+	this.snes.ppu.clock -= clocks;
 	for (var i = 0; i < snes.coprocessors.length; i++) {
 		var chip = coprocessors[i];
 		chip.clock -= clocks * chip.frequency;
@@ -69,20 +61,20 @@ SNESJS.CPU.prototype.step = function(clocks) {
 }
 
 SNESJS.CPU.prototype.synchronize_smp = function() {
-	while(snes.smp.clock < 0) {
-		snes.smp.enter();
+	while (this.snes.smp.clock < 0) {
+		this.snes.smp.enter();
 	}
 }
 
 SNESJS.CPU.prototype.synchronize_ppu = function() {
-	while(snes.ppu.clock < 0) {
-		snes.ppu.enter();
+	while (this.snes.ppu.clock < 0) {
+		this.snes.ppu.enter();
 	}
 }
 
 SNESJS.CPU.prototype.synchronize_coprocessors = function() {
-	for (var i = 0; i < cpu.coprocessors.length; i++) {
-		var chip = cpu.coprocessors[i];
+	for (var i = 0; i < this.coprocessors.length; i++) {
+		var chip = this.coprocessors[i];
 		if (chip.clock < 0) {
 			//sync
 		}
@@ -90,19 +82,23 @@ SNESJS.CPU.prototype.synchronize_coprocessors = function() {
 }
 
 SNESJS.CPU.prototype.synchronize_controllers = function() {
+	//Sync...
+}
 
+SNESJS.CPU.prototype.op_io = function() {
+	this.add_clocks(6);
 }
 
 SNESJS.CPU.prototype.enter = function() {
-	while(true) {
-		if (status.nmi_pending) {
-			status.nmi_pending = false;
+	while (true) {
+		if (this.status.nmi_pending) {
+			this.status.nmi_pending = false;
 			this.regs.vector = (this.regs.e == false ? 0xffee : 0xfffe);
 			this.op_irq();
 		}
 
-		if (status.irq_pending) {
-			status.irq_pending = false;
+		if (this.status.irq_pending) {
+			this.status.irq_pending = false;
 			this.regs.vector = (this.regs.e == false ? 0xffee : 0xfffe);
 			this.op_irq();
 		}
@@ -124,10 +120,95 @@ SNESJS.CPU.prototype.cpu_wram_writer = function(addr, data) {
 }
 
 SNESJS.CPU.prototype.enable = function() {
-	snes.bus.map 
+	/*
+	function <uint8(unsigned) > read( & CPU::mmio_read, (CPU * ) & cpu);
+
+	function <void(unsigned, uint8) > write( & CPU::mmio_write, (CPU * ) & cpu);
+
+	bus.map(Bus::MapMode::Direct, 0x00, 0x3f, 0x2140, 0x2183, read, write);
+	bus.map(Bus::MapMode::Direct, 0x80, 0xbf, 0x2140, 0x2183, read, write);
+
+	bus.map(Bus::MapMode::Direct, 0x00, 0x3f, 0x4016, 0x4017, read, write);
+	bus.map(Bus::MapMode::Direct, 0x80, 0xbf, 0x4016, 0x4017, read, write);
+
+	bus.map(Bus::MapMode::Direct, 0x00, 0x3f, 0x4200, 0x421f, read, write);
+	bus.map(Bus::MapMode::Direct, 0x80, 0xbf, 0x4200, 0x421f, read, write);
+
+	bus.map(Bus::MapMode::Direct, 0x00, 0x3f, 0x4300, 0x437f, read, write);
+	bus.map(Bus::MapMode::Direct, 0x80, 0xbf, 0x4300, 0x437f, read, write);
+
+	read = function <uint8(unsigned) > (cpu_wram_reader);
+	write = function <void(unsigned, uint8) > (cpu_wram_writer);
+
+	bus.map(Bus::MapMode::Linear, 0x00, 0x3f, 0x0000, 0x1fff, read, write, 0x000000, 0x002000);
+	bus.map(Bus::MapMode::Linear, 0x80, 0xbf, 0x0000, 0x1fff, read, write, 0x000000, 0x002000);
+	bus.map(Bus::MapMode::Linear, 0x7e, 0x7f, 0x0000, 0xffff, read, write);
+	*/
 }
 
+SNESJS.CPU.prototype.power = function() {
+	this.regs.a = 0x0000;
+	this.regs.x = 0x0000;
+	this.regs.y = 0x0000;
+	this.regs.s = 0x01ff;
 
-SNESJS.CPU.prototype.op_readpc = function() {
-	// body...
+	this.reset();
+}
+
+SNESJS.CPU.prototype.reset = function() {
+	this.snes.processor.create(Enter, this.snes.system.cpu_frequency);
+	this.snes.coprocessors.reset();
+	this.snes.ppucounter.reset();
+
+	this.regs.pc = 0x000000;
+	this.regs.x.h = 0x00;
+	this.regs.y.h = 0x00;
+	this.regs.s.h = 0x01;
+	this.regs.d = 0x0000;
+	this.regs.db = 0x00;
+	this.regs.p = 0x34;
+	this.regs.e = 1;
+	this.regs.mdr = 0x00;
+	this.regs.wai = false;
+	update_table();
+
+	this.regs.pc.l = bus.read(0xfffc);
+	this.regs.pc.h = bus.read(0xfffd);
+	this.regs.pc.b = 0x00;
+
+	this.status.nmi_valid = false;
+	this.status.nmi_line = false;
+	this.status.nmi_transition = false;
+	this.status.nmi_pending = false;
+
+	this.status.irq_valid = false;
+	this.status.irq_line = false;
+	this.status.irq_transition = false;
+	this.status.irq_pending = false;
+
+	this.status.irq_lock = false;
+	this.status.hdma_pending = false;
+
+	this.status.wram_addr = 0x000000;
+
+	this.status.joypad_strobe_latch = 0;
+
+	this.status.nmi_enabled = false;
+	this.status.virq_enabled = false;
+	this.status.hirq_enabled = false;
+	this.status.auto_joypad_poll_enabled = false;
+
+	this.status.pio = 0xff;
+
+	this.status.htime = 0x0000;
+	this.status.vtime = 0x0000;
+
+	this.status.rom_speed = 8;
+
+	this.status.joy1l = this.status.joy1h = 0x00;
+	this.status.joy2l = this.status.joy2h = 0x00;
+	this.status.joy3l = this.status.joy3h = 0x00;
+	this.status.joy4l = this.status.joy4h = 0x00;
+
+	this.dma_reset();
 }
