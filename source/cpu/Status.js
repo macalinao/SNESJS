@@ -1,45 +1,66 @@
-var cpu_status_nmi_valid = false;
-var cpu_status_nmi_line = false;
-var cpu_status_nmi_transition = false;
-var cpu_status_nmi_pending = false;
+/*
+ * This file is part of SNESJS.
+ *
+ * SNESJS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SNESJS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SNESJS.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-var cpu_status_irq_valid = false;
-var cpu_status_irq_line = false;
-var cpu_status_irq_transition = false;
-var cpu_status_irq_pending = false;
+SNESJS.CPU.Status = function() {
 
-var cpu_status_irq_lock = false;
-var cpu_status_hdma_pending = false;
+	this.nmi_valid = false;
+	this.nmi_line = false;
+	this.nmi_transition = false;
+	this.nmi_pending = false;
 
-var cpu_status_wram_addr = 0;
+	this.irq_valid = false;
+	this.irq_line = false;
+	this.irq_transition = false;
+	this.irq_pending = false;
 
-var cpu_status_joypad_strobe_latch = false;
+	this.irq_lock = false;
+	this.hdma_pending = false;
 
-var cpu_status_nmi_enabled = false;
-var cpu_status_virq_enabled = false;
-var cpu_status_hirq_enabled = false;
-var cpu_status_auto_joypad_poll_enabled = false;
+	this.wram_addr = 0;
 
-var cpu_status_pio = 0;
+	this.joypad_strobe_latch = false;
 
-var cpu_status_wrmpya = 0;
-var cpu_status_wrmpyb = 0;
-var cpu_status_wrdiva = 0;
-var cpu_status_wrdivb = 0;
+	this.nmi_enabled = false;
+	this.virq_enabled = false;
+	this.hirq_enabled = false;
+	this.auto_joypad_poll_enabled = false;
 
-var cpu_status_htime = 0;
-var cpu_status_vtime = 0;
+	this.pio = 0;
 
-var cpu_status_rom_speed = 0;
+	this.wrmpya = 0;
+	this.wrmpyb = 0;
+	this.wrdiva = 0;
+	this.wrdivb = 0;
 
-var cpu_status_rddiv = 0;
-var cpu_status_rdmpy = 0;
+	this.htime = 0;
+	this.vtime = 0;
 
-var cpu_status_joy1l = 0
-var cpu_status_joy1h = 0;
-var cpu_status_joy2l = 0
-var cpu_status_joy2h = 0;
-var cpu_status_joy3l = 0
-var cpu_status_joy3h = 0;
-var cpu_status_joy4l = 0
-var cpu_status_joy4h = 0;
+	this.rom_speed = 0;
+
+	this.rddiv = 0;
+	this.rdmpy = 0;
+
+	this.joy1l = 0
+	this.joy1h = 0;
+	this.joy2l = 0
+	this.joy2h = 0;
+	this.joy3l = 0
+	this.joy3h = 0;
+	this.joy4l = 0
+	this.joy4h = 0;
+
+}

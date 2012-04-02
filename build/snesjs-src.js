@@ -1276,7 +1276,7 @@ SNESJS.CPU.prototype.dma_run = function() {
     channel[i].dma_enabled = false;
   }
 
-  cpu_status_irq_lock = true;
+  this.irq_lock = true;
 }
 
 SNESJS.CPU.prototype.hdma_active_after = function(i) {
@@ -1338,7 +1338,7 @@ SNESJS.CPU.prototype.hdma_run = function() {
     hdma_update(i);
   }
 
-  cpu_status_irq_lock = true;
+  this.irq_lock = true;
 }
 
 SNESJS.CPU.prototype.hdma_init = function() {
@@ -1362,7 +1362,7 @@ SNESJS.CPU.prototype.hdma_init = function() {
     this.hdma_update(i);
   }
 
-  cpu_status_irq_lock = true;
+  this.irq_lock = true;
 }
 
 SNESJS.CPU.prototype.dma_reset = function() {
@@ -1420,8 +1420,8 @@ SNESJS.CPU.prototype.mmio_read = function(addr) {
 
     switch (addr & 0xffff) {
         case 0x2180:
-            var result = this.snes.bus.read(0x7e0000 | cpu_status_wram_addr);
-            cpu_status_wram_addr = (cpu_status_wram_addr + 1) & 0x01ffff;
+            var result = this.snes.bus.read(0x7e0000 | this.wram_addr);
+            this.wram_addr = (this.wram_addr + 1) & 0x01ffff;
             return result;
 
         case 0x4016:
@@ -1436,15 +1436,15 @@ SNESJS.CPU.prototype.mmio_read = function(addr) {
 
         case 0x4210:
             var result = this.regs.mdr & 0x70;
-            result |= ((cpu_status_nmi_line ? 1 : 0) << 7);
+            result |= ((this.nmi_line ? 1 : 0) << 7);
             result |= 0x02;  //CPU revision
-            cpu_status_nmi_line = false;
+            this.nmi_line = false;
             return result;
 
         case 0x4211:
             var result = this.regs.mdr & 0x7f;
-            result |= (cpu_status_irq_line ? 1 : 0) << 7;
-            cpu_status_irq_line = false;
+            result |= (this.irq_line ? 1 : 0) << 7;
+            this.irq_line = false;
             return result;
 
         case 0x4212:
@@ -1465,43 +1465,43 @@ SNESJS.CPU.prototype.mmio_read = function(addr) {
             return result;
 
         case 0x4213:
-            return cpu_status_pio;
+            return this.pio;
 
         case 0x4214:
-            return cpu_status_rddiv >> 0;
+            return this.rddiv >> 0;
 
         case 0x4215:
-            return cpu_status_rddiv >> 8;
+            return this.rddiv >> 8;
 
         case 0x4216:
-            return cpu_status_rdmpy >> 0;
+            return this.rdmpy >> 0;
 
         case 0x4217:
-            return cpu_status_rdmpy >> 8;
+            return this.rdmpy >> 8;
 
         case 0x4218:
-            return cpu_status_joy1l;
+            return this.joy1l;
 
         case 0x4219:
-            return cpu_status_joy1h;
+            return this.joy1h;
 
         case 0x421a:
-            return cpu_status_joy2l;
+            return this.joy2l;
 
         case 0x421b:
-            return cpu_status_joy2h;
+            return this.joy2h;
 
         case 0x421c:
-            return cpu_status_joy3l;
+            return this.joy3l;
 
         case 0x421d:
-            return cpu_status_joy3h;
+            return this.joy3h;
 
         case 0x421e:
-            return cpu_status_joy4l;
+            return this.joy4l;
 
         case 0x421f:
-            return cpu_status_joy4h;
+            return this.joy4h;
     }
 
     if ((addr & 0xff80) == 0x4300) {
@@ -1563,20 +1563,20 @@ SNESJS.CPU.prototype.mmio_write = function(addr, data) {
 
     switch (addr & 0xffff) {
         case 0x2180:
-            this.snes.bus.write(new uint24(0x7e0000 | cpu_status_wram_addr), data);
-            cpu_status_wram_addr = (cpu_status_wram_addr + 1) & 0x01ffff;
+            this.snes.bus.write(new uint24(0x7e0000 | this.wram_addr), data);
+            this.wram_addr = (this.wram_addr + 1) & 0x01ffff;
             return;
 
         case 0x2181:
-            cpu_status_wram_addr = (cpu_status_wram_addr & 0x01ff00) | (data << 0);
+            this.wram_addr = (this.wram_addr & 0x01ff00) | (data << 0);
             return;
 
         case 0x2182:
-            cpu_status_wram_addr = (cpu_status_wram_addr & 0x0100ff) | (data << 8);
+            this.wram_addr = (this.wram_addr & 0x0100ff) | (data << 8);
             return;
 
         case 0x2183:
-            cpu_status_wram_addr = (cpu_status_wram_addr & 0x00ffff) | ((data & 1) << 16);
+            this.wram_addr = (this.wram_addr & 0x00ffff) | ((data & 1) << 16);
             return;
 
         case 0x4016:
@@ -1585,74 +1585,74 @@ SNESJS.CPU.prototype.mmio_write = function(addr, data) {
             return;
 
         case 0x4200:
-            var nmi_enabled = cpu_status_nmi_enabled;
-            var virq_enabled = cpu_status_virq_enabled;
-            var hirq_enabled = cpu_status_hirq_enabled;
+            var nmi_enabled = this.nmi_enabled;
+            var virq_enabled = this.virq_enabled;
+            var hirq_enabled = this.hirq_enabled;
 
-            cpu_status_nmi_enabled = (data & 0x80) != 0;
-            cpu_status_virq_enabled = (data & 0x20) != 0;
-            cpu_status_hirq_enabled = (data & 0x10) != 0;
-            cpu_status_auto_joypad_poll_enabled = (data & 0x01) != 0;
+            this.nmi_enabled = (data & 0x80) != 0;
+            this.virq_enabled = (data & 0x20) != 0;
+            this.hirq_enabled = (data & 0x10) != 0;
+            this.auto_joypad_poll_enabled = (data & 0x01) != 0;
 
-            if (!nmi_enabled && cpu_status_nmi_enabled && cpu_status_nmi_line) {
-                cpu_status_nmi_transition = true;
+            if (!nmi_enabled && this.nmi_enabled && this.nmi_line) {
+                this.nmi_transition = true;
             }
 
-            if (cpu_status_virq_enabled && !cpu_status_hirq_enabled && cpu_status_irq_line) {
-                cpu_status_irq_transition = true;
+            if (this.virq_enabled && !this.hirq_enabled && this.irq_line) {
+                this.irq_transition = true;
             }
 
-            if (!cpu_status_virq_enabled && !cpu_status_hirq_enabled) {
-                cpu_status_irq_line = false;
-                cpu_status_irq_transition = false;
+            if (!this.virq_enabled && !this.hirq_enabled) {
+                this.irq_line = false;
+                this.irq_transition = false;
             }
 
-            cpu_status_irq_lock = true;
+            this.irq_lock = true;
             return;
 
         case 0x4201:
-            if ((cpu_status_pio & 0x80) != 0 && (data & 0x80) == 0) {
+            if ((this.pio & 0x80) != 0 && (data & 0x80) == 0) {
                 this.snes.ppu.latch_counters();
             }
-            cpu_status_pio = data;
+            this.pio = data;
 
         case 0x4202:
-            cpu_status_wrmpya = data;
+            this.wrmpya = data;
             return;
 
         case 0x4203:
-            cpu_status_wrmpyb = data;
-            cpu_status_rdmpy = (cpu_status_wrmpya * cpu_status_wrmpyb);
+            this.wrmpyb = data;
+            this.rdmpy = (this.wrmpya * this.wrmpyb);
             return;
 
         case 0x4204:
-            cpu_status_wrdiva = ((cpu_status_wrdiva & 0xff00) | (data << 0));
+            this.wrdiva = ((this.wrdiva & 0xff00) | (data << 0));
             return;
 
         case 0x4205:
-            cpu_status_wrdiva = ((data << 8) | (cpu_status_wrdiva & 0x00ff));
+            this.wrdiva = ((data << 8) | (this.wrdiva & 0x00ff));
             return;
 
         case 0x4206:
-            cpu_status_wrdivb = data;
-            cpu_status_rddiv = ((cpu_status_wrdivb != 0) ? cpu_status_wrdiva / cpu_status_wrdivb : 0xffff);
-            cpu_status_rdmpy = ((cpu_status_wrdivb != 0) ? cpu_status_wrdiva % cpu_status_wrdivb : cpu_status_wrdiva);
+            this.wrdivb = data;
+            this.rddiv = ((this.wrdivb != 0) ? this.wrdiva / this.wrdivb : 0xffff);
+            this.rdmpy = ((this.wrdivb != 0) ? this.wrdiva % this.wrdivb : this.wrdiva);
             return;
 
         case 0x4207:
-            cpu_status_htime = ((cpu_status_htime & 0x0100) | (data << 0));
+            this.htime = ((this.htime & 0x0100) | (data << 0));
             return;
 
         case 0x4208:
-            cpu_status_htime = (((data & 1) << 8) | (cpu_status_htime & 0x00ff));
+            this.htime = (((data & 1) << 8) | (this.htime & 0x00ff));
             return;
 
         case 0x4209:
-            cpu_status_vtime = ((cpu_status_vtime & 0x0100) | (data << 0));
+            this.vtime = ((this.vtime & 0x0100) | (data << 0));
             return;
 
         case 0x420a:
-            cpu_status_vtime = (((data & 1) << 8) | (cpu_status_vtime & 0x00ff));
+            this.vtime = (((data & 1) << 8) | (this.vtime & 0x00ff));
             return;
 
         case 0x420b:
@@ -1671,7 +1671,7 @@ SNESJS.CPU.prototype.mmio_write = function(addr, data) {
             return;
 
         case 0x420d:
-            cpu_status_rom_speed = (data & 1) != 0 ? 6 : 8;
+            this.rom_speed = (data & 1) != 0 ? 6 : 8;
             return;
     }
 
@@ -1832,51 +1832,72 @@ SNESJS.CPU.Reg24 = function() {
 }
 
 
-var cpu_status_nmi_valid = false;
-var cpu_status_nmi_line = false;
-var cpu_status_nmi_transition = false;
-var cpu_status_nmi_pending = false;
+/*
+ * This file is part of SNESJS.
+ *
+ * SNESJS is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * SNESJS is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with SNESJS.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
-var cpu_status_irq_valid = false;
-var cpu_status_irq_line = false;
-var cpu_status_irq_transition = false;
-var cpu_status_irq_pending = false;
+SNESJS.CPU.Status = function() {
 
-var cpu_status_irq_lock = false;
-var cpu_status_hdma_pending = false;
+	this.nmi_valid = false;
+	this.nmi_line = false;
+	this.nmi_transition = false;
+	this.nmi_pending = false;
 
-var cpu_status_wram_addr = 0;
+	this.irq_valid = false;
+	this.irq_line = false;
+	this.irq_transition = false;
+	this.irq_pending = false;
 
-var cpu_status_joypad_strobe_latch = false;
+	this.irq_lock = false;
+	this.hdma_pending = false;
 
-var cpu_status_nmi_enabled = false;
-var cpu_status_virq_enabled = false;
-var cpu_status_hirq_enabled = false;
-var cpu_status_auto_joypad_poll_enabled = false;
+	this.wram_addr = 0;
 
-var cpu_status_pio = 0;
+	this.joypad_strobe_latch = false;
 
-var cpu_status_wrmpya = 0;
-var cpu_status_wrmpyb = 0;
-var cpu_status_wrdiva = 0;
-var cpu_status_wrdivb = 0;
+	this.nmi_enabled = false;
+	this.virq_enabled = false;
+	this.hirq_enabled = false;
+	this.auto_joypad_poll_enabled = false;
 
-var cpu_status_htime = 0;
-var cpu_status_vtime = 0;
+	this.pio = 0;
 
-var cpu_status_rom_speed = 0;
+	this.wrmpya = 0;
+	this.wrmpyb = 0;
+	this.wrdiva = 0;
+	this.wrdivb = 0;
 
-var cpu_status_rddiv = 0;
-var cpu_status_rdmpy = 0;
+	this.htime = 0;
+	this.vtime = 0;
 
-var cpu_status_joy1l = 0
-var cpu_status_joy1h = 0;
-var cpu_status_joy2l = 0
-var cpu_status_joy2h = 0;
-var cpu_status_joy3l = 0
-var cpu_status_joy3h = 0;
-var cpu_status_joy4l = 0
-var cpu_status_joy4h = 0;
+	this.rom_speed = 0;
+
+	this.rddiv = 0;
+	this.rdmpy = 0;
+
+	this.joy1l = 0
+	this.joy1h = 0;
+	this.joy2l = 0
+	this.joy2h = 0;
+	this.joy3l = 0
+	this.joy3h = 0;
+	this.joy4l = 0
+	this.joy4h = 0;
+
+}
 
 
 /*
@@ -1912,78 +1933,78 @@ SNESJS.CPU.prototype.queue_event = function(id) {
 }
 
 SNESJS.CPU.prototype.last_cycle = function() {
-  if(cpu_status_irq_lock) {
-    cpu_status_irq_lock = false;
+  if(this.irq_lock) {
+    this.irq_lock = false;
     return;
   }
 
-  if(cpu_status_nmi_transition) {
+  if(this.nmi_transition) {
     regs.wai = false;
-    cpu_status_nmi_transition = false;
-    cpu_status_nmi_pending = true;
+    this.nmi_transition = false;
+    this.nmi_pending = true;
   }
 
-  if(cpu_status_irq_transition || regs.irq) {
+  if(this.irq_transition || regs.irq) {
     regs.wai = false;
-    cpu_status_irq_transition = false;
-    cpu_status_irq_pending = !regs.p.i;
+    this.irq_transition = false;
+    this.irq_pending = !regs.p.i;
   }
 }
 
 SNESJS.CPU.prototype.add_clocks = function(clocks) {
-  if(cpu_status_hirq_enabled) {
-    if(cpu_status_virq_enabled) {
+  if(this.hirq_enabled) {
+    if(this.virq_enabled) {
       var cpu_time = this.snes.ppucounter.vcounter() * 1364 + hcounter();
-      var irq_time = cpu_status_vtime * 1364 + cpu_status_htime * 4;
+      var irq_time = this.vtime * 1364 + this.htime * 4;
       var framelines = (system.region.i == REGION_NTSC ? 262 : 312) + field();
 
       if(cpu_time > irq_time) {
       	irq_time += framelines * 1364;
       }
 
-      var irq_valid = cpu_status_irq_valid;
-      cpu_status_irq_valid = cpu_time <= irq_time && cpu_time + clocks > irq_time;
+      var irq_valid = this.irq_valid;
+      this.irq_valid = cpu_time <= irq_time && cpu_time + clocks > irq_time;
 
-      if(!irq_valid && cpu_status_irq_valid) {
-      	cpu_status_irq_line = true;
+      if(!irq_valid && this.irq_valid) {
+      	this.irq_line = true;
       }
 
     } else {
 
-      var irq_time = cpu_status_htime * 4;
+      var irq_time = this.htime * 4;
 
       if(hcounter() > irq_time) {
       	irq_time += 1364;
       }
 
-      var irq_valid = cpu_status_irq_valid;
+      var irq_valid = this.irq_valid;
 
-      cpu_status_irq_valid = hcounter() <= irq_time && hcounter() + clocks > irq_time;
+      this.irq_valid = hcounter() <= irq_time && hcounter() + clocks > irq_time;
 
-      if(!irq_valid && cpu_status_irq_valid) {
-      	cpu_status_irq_line = true;
+      if(!irq_valid && this.irq_valid) {
+      	this.irq_line = true;
       }
 
     }
 
-    if(cpu_status_irq_line) {
-    	cpu_status_irq_transition = true;
+    if(this.irq_line) {
+    	this.irq_transition = true;
     }
 
-  } else if(cpu_status_virq_enabled) {
-    var irq_valid = cpu_status_irq_valid;
-    cpu_status_irq_valid = vcounter() == cpu_status_vtime;
+  } else if(this.virq_enabled) {
+    var irq_valid = this.irq_valid;
+    this.irq_valid = vcounter() == this.vtime;
 
-    if(!irq_valid && cpu_status_irq_valid) {
-    	cpu_status_irq_line = true;
+    if(!irq_valid && this.irq_valid) {
+    	this.irq_line = true;
     }
 
-    if(cpu_status_irq_line) {
-    	cpu_status_irq_transition = true;
+    if(this.irq_line) {
+    	this.irq_transition = true;
     }
 
   } else {
-    cpu_status_irq_valid = false;
+    this.irq_valid = false;
   }
 
   this.tick(clocks);
@@ -2006,21 +2027,21 @@ SNESJS.CPU.prototype.scanline = function() {
     queue.enqueue(1104 + 8, SNESJS.CPU.QueueEvent.HdmaRun);
   }
 
-  var nmi_valid = cpu_status_nmi_valid;
-  cpu_status_nmi_valid = vcounter() >= (ppu.overscan() == false ? 225 : 240);
+  var nmi_valid = this.nmi_valid;
+  this.nmi_valid = vcounter() >= (ppu.overscan() == false ? 225 : 240);
 
-  if(!nmi_valid && cpu_status_nmi_valid) {
-    cpu_status_nmi_line = true;
+  if(!nmi_valid && this.nmi_valid) {
+    this.nmi_line = true;
 
-    if(cpu_status_nmi_enabled) {
-    	cpu_status_nmi_transition = true;
+    if(this.nmi_enabled) {
+    	this.nmi_transition = true;
     }
 
-  } else if(nmi_valid && !cpu_status_nmi_valid) {
-    cpu_status_nmi_line = false;
+  } else if(nmi_valid && !this.nmi_valid) {
+    this.nmi_line = false;
   }
 
-  if(cpu_status_auto_joypad_poll_enabled && vcounter() == (ppu.overscan() == false ? 227 : 242)) {
+  if(this.auto_joypad_poll_enabled && vcounter() == (ppu.overscan() == false ? 227 : 242)) {
     this.run_auto_joypad_poll();
   }
 }
@@ -2042,17 +2063,17 @@ SNESJS.CPU.prototype.run_auto_joypad_poll = function() {
     joy4 |= (port1 & 2) ? (0x8000 >> i) : 0;
   }
 
-  cpu_status_joy1l = joy1;
-  cpu_status_joy1h = joy1 >> 8;
+  this.joy1l = joy1;
+  this.joy1h = joy1 >> 8;
 
-  cpu_status_joy2l = joy2;
-  cpu_status_joy2h = joy2 >> 8;
+  this.joy2l = joy2;
+  this.joy2h = joy2 >> 8;
 
-  cpu_status_joy3l = joy3;
-  cpu_status_joy3h = joy3 >> 8;
+  this.joy3l = joy3;
+  this.joy3h = joy3 >> 8;
 
-  cpu_status_joy4l = joy4;
-  cpu_status_joy4h = joy4 >> 8;
+  this.joy4l = joy4;
+  this.joy4h = joy4 >> 8;
 }
 
 

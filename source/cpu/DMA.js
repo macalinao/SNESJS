@@ -112,7 +112,7 @@ SNESJS.CPU.prototype.dma_run = function() {
     channel[i].dma_enabled = false;
   }
 
-  cpu_status_irq_lock = true;
+  this.irq_lock = true;
 }
 
 SNESJS.CPU.prototype.hdma_active_after = function(i) {
@@ -174,7 +174,7 @@ SNESJS.CPU.prototype.hdma_run = function() {
     hdma_update(i);
   }
 
-  cpu_status_irq_lock = true;
+  this.irq_lock = true;
 }
 
 SNESJS.CPU.prototype.hdma_init = function() {
@@ -198,7 +198,7 @@ SNESJS.CPU.prototype.hdma_init = function() {
     this.hdma_update(i);
   }
 
-  cpu_status_irq_lock = true;
+  this.irq_lock = true;
 }
 
 SNESJS.CPU.prototype.dma_reset = function() {
