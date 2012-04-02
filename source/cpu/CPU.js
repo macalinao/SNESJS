@@ -43,6 +43,19 @@ SNESJS.CPU = function(snes) {
 
 	this._cpu_version = 0;
 
+	this.channel = [
+		new SNESJS.CPU.Channel(),
+		new SNESJS.CPU.Channel(),
+		new SNESJS.CPU.Channel(),
+		new SNESJS.CPU.Channel(),
+		new SNESJS.CPU.Channel(),
+		new SNESJS.CPU.Channel(),
+		new SNESJS.CPU.Channel(),
+		new SNESJS.CPU.Channel()
+	];
+
+	this.port_data = [0, 0, 0, 0];
+
 	this.initialize_opcode_table();
 }
 

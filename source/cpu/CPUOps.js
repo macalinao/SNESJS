@@ -10,14 +10,12 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with SNESJS.  If not, see <http://www.gnu.org/licenses/>.
  */
 
 SNESJS.CPU.prototype.initialize_opcode_table = function() {
-	
-
 	/*
 	 * Register all ops!
 	 */
@@ -290,12 +288,9 @@ SNESJS.CPU.prototype.opA = function(id, name) {
 	var cpu = this;
 	var func1 = getFunctionByName("SNESJS.CPU.OPS." + name);
 
-    this.optable[TBL_EM + id] = 
-    this.optable[TBL_MX + id] = 
-    this.optable[TBL_Mx + id] = 
-    this.optable[TBL_mX + id] = 
-    this.optable[TBL_mx + id] = 
-    function() { func1(cpu); };
+	this.optable[TBL_EM + id] = this.optable[TBL_MX + id] = this.optable[TBL_Mx + id] = this.optable[TBL_mX + id] = this.optable[TBL_mx + id] = function() {
+		func1(cpu);
+	};
 }
 
 //All modes, 2 args
@@ -303,12 +298,9 @@ SNESJS.CPU.prototype.opAII = function(id, name, x, y) {
 	var cpu = this;
 	var func1 = getFunctionByName("SNESJS.CPU.OPS." + name);
 
-    this.optable[TBL_EM + id] = 
-    this.optable[TBL_MX + id] = 
-    this.optable[TBL_Mx + id] = 
-    this.optable[TBL_mX + id] = 
-    this.optable[TBL_mx + id] = 
-    function() { func1(cpu, x, y); };
+	this.optable[TBL_EM + id] = this.optable[TBL_MX + id] = this.optable[TBL_Mx + id] = this.optable[TBL_mX + id] = this.optable[TBL_mx + id] = function() {
+		func1(cpu, x, y);
+	};
 }
 
 //Different on emulation mode
@@ -316,16 +308,15 @@ SNESJS.CPU.prototype.opE = function(id, name) {
 	var cpu = this;
 	var func1 = getFunctionByName("SNESJS.CPU.OPS." + name + "_e");
 
-    this.optable[TBL_EM + id] = 
-    function() { func1(cpu); };
+	this.optable[TBL_EM + id] = function() {
+		func1(cpu);
+	};
 
-    var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_n");
+	var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_n");
 
-    this.optable[TBL_MX + id] = 
-    this.optable[TBL_Mx + id] = 
-    this.optable[TBL_mX + id] = 
-    this.optable[TBL_mx + id] = 
-    function() { func2(cpu); };
+	this.optable[TBL_MX + id] = this.optable[TBL_Mx + id] = this.optable[TBL_mX + id] = this.optable[TBL_mx + id] = function() {
+		func2(cpu);
+	};
 }
 
 //Different on emulation mode, 1 arg
@@ -333,16 +324,15 @@ SNESJS.CPU.prototype.opEI = function(id, name, x) {
 	var cpu = this;
 	var func1 = getFunctionByName("SNESJS.CPU.OPS." + name + "_e");
 
-    this.optable[TBL_EM + id] = 
-    function() { func1(cpu, x); };
-    
-    var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_n");
+	this.optable[TBL_EM + id] = function() {
+		func1(cpu, x);
+	};
 
-    this.optable[TBL_MX + id] = 
-    this.optable[TBL_Mx + id] = 
-    this.optable[TBL_mX + id] = 
-    this.optable[TBL_mx + id] = 
-    function() { func2(cpu, x); };
+	var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_n");
+
+	this.optable[TBL_MX + id] = this.optable[TBL_Mx + id] = this.optable[TBL_mX + id] = this.optable[TBL_mx + id] = function() {
+		func2(cpu, x);
+	};
 }
 
 //Different on emulation mode, 2 args
@@ -350,16 +340,15 @@ SNESJS.CPU.prototype.opEII = function(id, name, x, y) {
 	var cpu = this;
 	var func1 = getFunctionByName("SNESJS.CPU.OPS." + name + "_e");
 
-    this.optable[TBL_EM + id] = 
-    function() { func1(cpu, x, y); };
+	this.optable[TBL_EM + id] = function() {
+		func1(cpu, x, y);
+	};
 
-    var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_n");
+	var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_n");
 
-    this.optable[TBL_MX + id] = 
-    this.optable[TBL_Mx + id] = 
-    this.optable[TBL_mX + id] = 
-    this.optable[TBL_mx + id] =
-    function() { func2(cpu, x, y); };
+	this.optable[TBL_MX + id] = this.optable[TBL_Mx + id] = this.optable[TBL_mX + id] = this.optable[TBL_mx + id] = function() {
+		func2(cpu, x, y);
+	};
 }
 
 //Different on memory mode
@@ -367,16 +356,15 @@ SNESJS.CPU.prototype.opM = function(id, name) {
 	var cpu = this;
 	var func1 = getFunctionByName("SNESJS.CPU.OPS." + name + "_b");
 
-    this.optable[TBL_EM + id] = 
-    this.optable[TBL_MX + id] = 
-    this.optable[TBL_Mx + id] = 
-    function() { func1(cpu); };
+	this.optable[TBL_EM + id] = this.optable[TBL_MX + id] = this.optable[TBL_Mx + id] = function() {
+		func1(cpu);
+	};
 
-    var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
+	var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
 
-    this.optable[TBL_mX + id] = 
-    this.optable[TBL_mx + id] =
-    function() { func2(cpu); };
+	this.optable[TBL_mX + id] = this.optable[TBL_mx + id] = function() {
+		func2(cpu);
+	};
 }
 
 //Different on memory mode, 1 arg
@@ -384,16 +372,15 @@ SNESJS.CPU.prototype.opMI = function(id, name, x) {
 	var cpu = this;
 	var func1 = getFunctionByName("SNESJS.CPU.OPS." + name + "_b");
 
-    this.optable[TBL_EM + id] = 
-    this.optable[TBL_MX + id] = 
-    this.optable[TBL_Mx + id] =
-    function() { func1(cpu, x); };
+	this.optable[TBL_EM + id] = this.optable[TBL_MX + id] = this.optable[TBL_Mx + id] = function() {
+		func1(cpu, x);
+	};
 
-    var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
+	var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
 
-    this.optable[TBL_mX + id] = 
-    this.optable[TBL_mx + id] =
-    function() { func2(cpu, x); };
+	this.optable[TBL_mX + id] = this.optable[TBL_mx + id] = function() {
+		func2(cpu, x);
+	};
 }
 
 //Different on memory mode, 2 args
@@ -401,16 +388,15 @@ SNESJS.CPU.prototype.opMII = function(id, name, x, y) {
 	var cpu = this;
 	var func1 = getFunctionByName("SNESJS.CPU.OPS." + name + "_b");
 
-    this.optable[TBL_EM + id] = 
-    this.optable[TBL_MX + id] = 
-    this.optable[TBL_Mx + id] = 
-    function() { func1(cpu, x, y); };
+	this.optable[TBL_EM + id] = this.optable[TBL_MX + id] = this.optable[TBL_Mx + id] = function() {
+		func1(cpu, x, y);
+	};
 
-    var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
+	var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
 
-    this.optable[TBL_mX + id] = 
-    this.optable[TBL_mx + id] =
-    function() { func2(cpu, x, y); };
+	this.optable[TBL_mX + id] = this.optable[TBL_mx + id] = function() {
+		func2(cpu, x, y);
+	};
 }
 
 //Different on memory mode, accepts a function
@@ -419,17 +405,16 @@ SNESJS.CPU.prototype.opMF = function(id, name, fn) {
 	var func1 = getFunctionByName("SNESJS.CPU.OPS." + name + "_b");
 	var func1_a = getFunctionByName("SNESJS.CPU.OPS." + fn + "_b");
 
-    this.optable[TBL_EM + id] = 
-    this.optable[TBL_MX + id] = 
-    this.optable[TBL_Mx + id] = 
-    function() { func1(cpu, func1_a); };
+	this.optable[TBL_EM + id] = this.optable[TBL_MX + id] = this.optable[TBL_Mx + id] = function() {
+		func1(cpu, func1_a);
+	};
 
-    var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
-    var func2_a = getFunctionByName("SNESJS.CPU.OPS." + fn + "_w");
+	var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
+	var func2_a = getFunctionByName("SNESJS.CPU.OPS." + fn + "_w");
 
-    this.optable[TBL_mX + id] = 
-    this.optable[TBL_mx + id] = 
-    function() { func2(cpu, func2_a); };
+	this.optable[TBL_mX + id] = this.optable[TBL_mx + id] = function() {
+		func2(cpu, func2_a);
+	};
 }
 
 //Different on memory mode, accepts a function, 1 arg
@@ -438,17 +423,16 @@ SNESJS.CPU.prototype.opMFI = function(id, name, fn, x) {
 	var func1 = getFunctionByName("SNESJS.CPU.OPS." + name + "_b");
 	var func1_a = getFunctionByName("SNESJS.CPU.OPS." + fn + "_b");
 
-    this.optable[TBL_EM + id] = 
-    this.optable[TBL_MX + id] = 
-    this.optable[TBL_Mx + id] = 
-    function() { func1(cpu, func1_a, x); };
+	this.optable[TBL_EM + id] = this.optable[TBL_MX + id] = this.optable[TBL_Mx + id] = function() {
+		func1(cpu, func1_a, x);
+	};
 
-    var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
-    var func2_a = getFunctionByName("SNESJS.CPU.OPS." + fn + "_w");
+	var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
+	var func2_a = getFunctionByName("SNESJS.CPU.OPS." + fn + "_w");
 
-    this.optable[TBL_mX + id] = 
-    this.optable[TBL_mx + id] = 
-    function() { func2(cpu, func2_a, x); };
+	this.optable[TBL_mX + id] = this.optable[TBL_mx + id] = function() {
+		func2(cpu, func2_a, x);
+	};
 }
 
 //Different on register width
@@ -456,16 +440,15 @@ SNESJS.CPU.prototype.opX = function(id, name) {
 	var cpu = this;
 	var func1 = getFunctionByName("SNESJS.CPU.OPS." + name + "_b");
 
-    this.optable[TBL_EM + id] = 
-    this.optable[TBL_MX + id] = 
-    this.optable[TBL_mX + id] = 
-    function() { func1(cpu); };
+	this.optable[TBL_EM + id] = this.optable[TBL_MX + id] = this.optable[TBL_mX + id] = function() {
+		func1(cpu);
+	};
 
-    var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
+	var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
 
-    this.optable[TBL_Mx + id] = 
-    this.optable[TBL_mx + id] = 
-    function() { func2(cpu); };
+	this.optable[TBL_Mx + id] = this.optable[TBL_mx + id] = function() {
+		func2(cpu);
+	};
 }
 
 //Different on register width, 1 arg
@@ -473,32 +456,30 @@ SNESJS.CPU.prototype.opXI = function(id, name, x) {
 	var cpu = this;
 	var func1 = getFunctionByName("SNESJS.CPU.OPS." + name + "_b");
 
-    this.optable[TBL_EM + id] = 
-    this.optable[TBL_MX + id] = 
-    this.optable[TBL_mX + id] = 
-    function() { func1(cpu, x); };
+	this.optable[TBL_EM + id] = this.optable[TBL_MX + id] = this.optable[TBL_mX + id] = function() {
+		func1(cpu, x);
+	};
 
-    var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
+	var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
 
-    this.optable[TBL_Mx + id] = 
-    this.optable[TBL_mx + id] = 
-    function() { func2(cpu, x); };
+	this.optable[TBL_Mx + id] = this.optable[TBL_mx + id] = function() {
+		func2(cpu, x);
+	};
 }
 
 SNESJS.CPU.prototype.opXII = function(id, name, x, y) {
 	var cpu = this;
 	var func1 = getFunctionByName("SNESJS.CPU.OPS." + name + "_b");
 
-    this.optable[TBL_EM + id] = 
-    this.optable[TBL_MX + id] = 
-    this.optable[TBL_mX + id] = 
-    function() { func1(cpu, x, y); };
+	this.optable[TBL_EM + id] = this.optable[TBL_MX + id] = this.optable[TBL_mX + id] = function() {
+		func1(cpu, x, y);
+	};
 
-    var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
+	var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
 
-    this.optable[TBL_Mx + id] = 
-    this.optable[TBL_mx + id] = 
-    function() { func2(cpu, x, y); };
+	this.optable[TBL_Mx + id] = this.optable[TBL_mx + id] = function() {
+		func2(cpu, x, y);
+	};
 }
 
 //Different on register width, accepts a function
@@ -507,17 +488,16 @@ SNESJS.CPU.prototype.opXF = function(id, name, fn) {
 	var func1 = getFunctionByName("SNESJS.CPU.OPS." + name + "_b");
 	var func1_a = getFunctionByName("SNESJS.CPU.OPS." + fn);
 
-    this.optable[TBL_EM + id] = 
-    this.optable[TBL_MX + id] = 
-    this.optable[TBL_mX + id] = 
-    function() { func1(cpu, func1_a); };
+	this.optable[TBL_EM + id] = this.optable[TBL_MX + id] = this.optable[TBL_mX + id] = function() {
+		func1(cpu, func1_a);
+	};
 
-    var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
-    var func2_a = getFunctionByName("SNESJS.CPU.OPS." + fn);
+	var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
+	var func2_a = getFunctionByName("SNESJS.CPU.OPS." + fn);
 
-    this.optable[TBL_Mx + id] = 
-    this.optable[TBL_mx + id] = 
-    function() { func2(cpu, func2_a); };
+	this.optable[TBL_Mx + id] = this.optable[TBL_mx + id] = function() {
+		func2(cpu, func2_a);
+	};
 }
 
 //Different on register width, accepts a function, 1 arg
@@ -526,17 +506,16 @@ SNESJS.CPU.prototype.opXFI = function(id, name, fn, x) {
 	var func1 = getFunctionByName("SNESJS.CPU.OPS." + name + "_b");
 	var func1_a = getFunctionByName("SNESJS.CPU.OPS." + fn);
 
-    this.optable[TBL_EM + id] = 
-    this.optable[TBL_MX + id] = 
-    this.optable[TBL_mX + id] = 
-    function() { func1(cpu, func1_a, x); };
+	this.optable[TBL_EM + id] = this.optable[TBL_MX + id] = this.optable[TBL_mX + id] = function() {
+		func1(cpu, func1_a, x);
+	};
 
-    var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
-    var func2_a = getFunctionByName("SNESJS.CPU.OPS." + fn);
+	var func2 = getFunctionByName("SNESJS.CPU.OPS." + name + "_w");
+	var func2_a = getFunctionByName("SNESJS.CPU.OPS." + fn);
 
-    this.optable[TBL_Mx + id] = 
-    this.optable[TBL_mx + id] = 
-    function() { func2(cpu, func2_a, x); };
+	this.optable[TBL_Mx + id] = this.optable[TBL_mx + id] = function() {
+		func2(cpu, func2_a, x);
+	};
 }
 
 SNESJS.CPU.OPS = {
@@ -588,22 +567,22 @@ SNESJS.CPU.OPS = {
 	},
 
 	jmp_iaddr: function(cpu) {
-        cpu.aa.l = cpu.op_readpc();
-        cpu.aa.h = cpu.op_readpc();
-        cpu.rd.l = cpu.op_readaddr(aa.w + 0);
-        cpu.last_cycle();
-        cpu.rd.h = cpu.op_readaddr(aa.w + 1);
-        cpu.regs.pc.w = cpu.rd.w;
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
+		cpu.rd.l = cpu.op_readaddr(aa.w + 0);
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readaddr(aa.w + 1);
+		cpu.regs.pc.w = cpu.rd.w;
 	},
 
 	jmp_iaddrx: function(cpu) {
-        cpu.aa.l = cpu.op_readpc();
-        cpu.aa.h = cpu.op_readpc();
-        cpu.op_io();
-        cpu.rd.l = cpu.op_readpbr((uint)(aa.w + regs.x.w + 0));
-        cpu.last_cycle();
-        cpu.rd.h = cpu.op_readpbr((uint)(aa.w + regs.x.w + 1));
-        cpu.regs.pc.w = cpu.rd.w;
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
+		cpu.op_io();
+		cpu.rd.l = cpu.op_readpbr((uint)(aa.w + regs.x.w + 0));
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readpbr((uint)(aa.w + regs.x.w + 1));
+		cpu.regs.pc.w = cpu.rd.w;
 	},
 
 	jmp_iladdr: function(cpu) {
@@ -665,7 +644,7 @@ SNESJS.CPU.OPS = {
 
 	nop: function(cpu) {
 		cpu.last_cycle();
-		cpu.op_io_irq();		
+		cpu.op_io_irq();
 	},
 
 	wdm: function(cpu) {

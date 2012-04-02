@@ -21,10 +21,13 @@ packages:
     # CPU
     - cpu/CPU
     - cpu/ALU
+    - cpu/Channel
     - cpu/CPUOPS
+    - cpu/DMA
     - cpu/MMIO
     - cpu/Registers
     - cpu/Status
+    - cpu/Timing
     # Util
     - util/Bits
     - util/MiscUtils
