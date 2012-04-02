@@ -160,20 +160,20 @@ SNESJS.CPU.prototype.reset = function() {
 	this.snes.coprocessors.reset();
 	this.snes.ppucounter.reset();
 
-	this.regs.pc = 0x000000;
+	this.regs.pc.d = 0x000000;
 	this.regs.x.h = 0x00;
 	this.regs.y.h = 0x00;
 	this.regs.s.h = 0x01;
-	this.regs.d = 0x0000;
+	this.regs.d.w = 0x0000;
 	this.regs.db = 0x00;
-	this.regs.p = 0x34;
+	this.regs.p.assign(0x34);
 	this.regs.e = 1;
 	this.regs.mdr = 0x00;
 	this.regs.wai = false;
 	update_table();
 
-	this.regs.pc.l = bus.read(0xfffc);
-	this.regs.pc.h = bus.read(0xfffd);
+	this.regs.pc.l = this.snes.bus.read(0xfffc);
+	this.regs.pc.h = this.snes.bus.read(0xfffd);
 	this.regs.pc.b = 0x00;
 
 	this.status.nmi_valid = false;
