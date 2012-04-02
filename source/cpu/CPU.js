@@ -28,8 +28,6 @@ var OPCODE_Z = 3;
 var OPCODE_S = 4;
 var OPCODE_D = 5;
 
-SNESJS = function() {}
-
 SNESJS.CPU = function(snes) {
 	this.snes = snes;
 
