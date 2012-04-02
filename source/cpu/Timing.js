@@ -31,89 +31,89 @@ SNESJS.CPU.prototype.queue_event = function(id) {
 }
 
 SNESJS.CPU.prototype.last_cycle = function() {
-  if(this.irq_lock) {
-    this.irq_lock = false;
+  if(this.status.irq_lock) {
+    this.status.irq_lock = false;
     return;
   }
 
-  if(this.nmi_transition) {
+  if(this.status.nmi_transition) {
     regs.wai = false;
-    this.nmi_transition = false;
-    this.nmi_pending = true;
+    this.status.nmi_transition = false;
+    this.status.nmi_pending = true;
   }
 
-  if(this.irq_transition || regs.irq) {
+  if(this.status.irq_transition || regs.irq) {
     regs.wai = false;
-    this.irq_transition = false;
-    this.irq_pending = !regs.p.i;
+    this.status.irq_transition = false;
+    this.status.irq_pending = !regs.p.i;
   }
 }
 
 SNESJS.CPU.prototype.add_clocks = function(clocks) {
-  if(this.hirq_enabled) {
-    if(this.virq_enabled) {
+  if(this.status.hirq_enabled) {
+    if(this.status.virq_enabled) {
       var cpu_time = this.snes.ppucounter.vcounter() * 1364 + hcounter();
-      var irq_time = this.vtime * 1364 + this.htime * 4;
+      var irq_time = this.status.vtime * 1364 + this.status.htime * 4;
       var framelines = (system.region.i == REGION_NTSC ? 262 : 312) + field();
 
       if(cpu_time > irq_time) {
       	irq_time += framelines * 1364;
       }
 
-      var irq_valid = this.irq_valid;
-      this.irq_valid = cpu_time <= irq_time && cpu_time + clocks > irq_time;
+      var irq_valid = this.status.irq_valid;
+      this.status.irq_valid = cpu_time <= irq_time && cpu_time + clocks > irq_time;
 
-      if(!irq_valid && this.irq_valid) {
-      	this.irq_line = true;
+      if(!irq_valid && this.status.irq_valid) {
+      	this.status.irq_line = true;
       }
 
     } else {
 
-      var irq_time = this.htime * 4;
+      var irq_time = this.status.htime * 4;
 
       if(hcounter() > irq_time) {
       	irq_time += 1364;
       }
 
-      var irq_valid = this.irq_valid;
+      var irq_valid = this.status.irq_valid;
 
-      this.irq_valid = hcounter() <= irq_time && hcounter() + clocks > irq_time;
+      this.status.irq_valid = hcounter() <= irq_time && hcounter() + clocks > irq_time;
 
-      if(!irq_valid && this.irq_valid) {
-      	this.irq_line = true;
+      if(!irq_valid && this.status.irq_valid) {
+      	this.status.irq_line = true;
       }
 
     }
 
-    if(this.irq_line) {
-    	this.irq_transition = true;
+    if(this.status.irq_line) {
+    	this.status.irq_transition = true;
     }
 
-  } else if(this.virq_enabled) {
-    var irq_valid = this.irq_valid;
-    this.irq_valid = vcounter() == this.vtime;
+  } else if(this.status.virq_enabled) {
+    var irq_valid = this.status.irq_valid;
+    this.status.irq_valid = vcounter() == this.status.vtime;
 
-    if(!irq_valid && this.irq_valid) {
-    	this.irq_line = true;
+    if(!irq_valid && this.status.irq_valid) {
+    	this.status.irq_line = true;
     }
 
-    if(this.irq_line) {
-    	this.irq_transition = true;
+    if(this.status.irq_line) {
+    	this.status.irq_transition = true;
     }
 
   } else {
-    this.irq_valid = false;
+    this.status.irq_valid = false;
   }
 
-  this.tick(clocks);
+  this.status.tick(clocks);
   queue.tick(clocks);
   step(clocks);
 }
 
 SNESJS.CPU.prototype.scanline = function() {
-  this.synchronize_smp();
-  this.synchronize_ppu();
-  this.synchronize_coprocessors();
+  this.status.synchronize_smp();
+  this.status.synchronize_ppu();
+  this.status.synchronize_coprocessors();
 
   this.snes.system.scanline();
 
@@ -125,22 +125,22 @@ SNESJS.CPU.prototype.scanline = function() {
     queue.enqueue(1104 + 8, SNESJS.CPU.QueueEvent.HdmaRun);
   }
 
-  var nmi_valid = this.nmi_valid;
-  this.nmi_valid = vcounter() >= (ppu.overscan() == false ? 225 : 240);
+  var nmi_valid = this.status.nmi_valid;
+  this.status.nmi_valid = vcounter() >= (ppu.overscan() == false ? 225 : 240);
 
-  if(!nmi_valid && this.nmi_valid) {
-    this.nmi_line = true;
+  if(!nmi_valid && this.status.nmi_valid) {
+    this.status.nmi_line = true;
 
-    if(this.nmi_enabled) {
-    	this.nmi_transition = true;
+    if(this.status.nmi_enabled) {
+    	this.status.nmi_transition = true;
     }
 
-  } else if(nmi_valid && !this.nmi_valid) {
-    this.nmi_line = false;
+  } else if(nmi_valid && !this.status.nmi_valid) {
+    this.status.nmi_line = false;
   }
 
-  if(this.auto_joypad_poll_enabled && vcounter() == (ppu.overscan() == false ? 227 : 242)) {
-    this.run_auto_joypad_poll();
+  if(this.status.auto_joypad_poll_enabled && vcounter() == (ppu.overscan() == false ? 227 : 242)) {
+    this.status.run_auto_joypad_poll();
   }
 }
 
@@ -161,15 +161,15 @@ SNESJS.CPU.prototype.run_auto_joypad_poll = function() {
     joy4 |= (port1 & 2) ? (0x8000 >> i) : 0;
   }
 
-  this.joy1l = joy1;
-  this.joy1h = joy1 >> 8;
+  this.status.joy1l = joy1;
+  this.status.joy1h = joy1 >> 8;
 
-  this.joy2l = joy2;
-  this.joy2h = joy2 >> 8;
+  this.status.joy2l = joy2;
+  this.status.joy2h = joy2 >> 8;
 
-  this.joy3l = joy3;
-  this.joy3h = joy3 >> 8;
+  this.status.joy3l = joy3;
+  this.status.joy3h = joy3 >> 8;
 
-  this.joy4l = joy4;
-  this.joy4h = joy4 >> 8;
+  this.status.joy4l = joy4;
+  this.status.joy4h = joy4 >> 8;
 }

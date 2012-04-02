@@ -54,6 +54,8 @@ SNESJS.CPU = function(snes) {
 
 	this.port_data = [0, 0, 0, 0];
 
+	this.status = new SNESJS.CPU.Status();
+
 	this.initialize_opcode_table();
 }
 

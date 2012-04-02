@@ -23,8 +23,8 @@ SNESJS.CPU.prototype.mmio_read = function(addr) {
 
     switch (addr & 0xffff) {
         case 0x2180:
-            var result = this.snes.bus.read(0x7e0000 | this.wram_addr);
-            this.wram_addr = (this.wram_addr + 1) & 0x01ffff;
+            var result = this.snes.bus.read(0x7e0000 | this.status.wram_addr);
+            this.status.wram_addr = (this.status.wram_addr + 1) & 0x01ffff;
             return result;
 
         case 0x4016:
@@ -33,25 +33,25 @@ SNESJS.CPU.prototype.mmio_read = function(addr) {
             return result;
 
         case 0x4017:
-            var result = (this.regs.mdr & 0xe0) | 0x1c;
+            var result = (this.status.regs.mdr & 0xe0) | 0x1c;
             result |= (Input.input.port_read(true) & 3);
             return result;
 
         case 0x4210:
-            var result = this.regs.mdr & 0x70;
-            result |= ((this.nmi_line ? 1 : 0) << 7);
+            var result = this.status.regs.mdr & 0x70;
+            result |= ((this.status.nmi_line ? 1 : 0) << 7);
             result |= 0x02;  //CPU revision
-            this.nmi_line = false;
+            this.status.nmi_line = false;
             return result;
 
         case 0x4211:
-            var result = this.regs.mdr & 0x7f;
-            result |= (this.irq_line ? 1 : 0) << 7;
-            this.irq_line = false;
+            var result = this.status.regs.mdr & 0x7f;
+            result |= (this.status.irq_line ? 1 : 0) << 7;
+            this.status.irq_line = false;
             return result;
 
         case 0x4212:
-            var result = (this.regs.mdr & 0x3e);
+            var result = (this.status.regs.mdr & 0x3e);
             vbstart = this.snes.ppu.overscan() ? 240 : 225;
 
             if (this.snes.ppucounter.vcounter() >= vbstart && this.snes.ppucounter.vcounter() <= vbstart + 2) {
@@ -68,43 +68,43 @@ SNESJS.CPU.prototype.mmio_read = function(addr) {
             return result;
 
         case 0x4213:
-            return this.pio;
+            return this.status.pio;
 
         case 0x4214:
-            return this.rddiv >> 0;
+            return this.status.rddiv >> 0;
 
         case 0x4215:
-            return this.rddiv >> 8;
+            return this.status.rddiv >> 8;
 
         case 0x4216:
-            return this.rdmpy >> 0;
+            return this.status.rdmpy >> 0;
 
         case 0x4217:
-            return this.rdmpy >> 8;
+            return this.status.rdmpy >> 8;
 
         case 0x4218:
-            return this.joy1l;
+            return this.status.joy1l;
 
         case 0x4219:
-            return this.joy1h;
+            return this.status.joy1h;
 
         case 0x421a:
-            return this.joy2l;
+            return this.status.joy2l;
 
         case 0x421b:
-            return this.joy2h;
+            return this.status.joy2h;
 
         case 0x421c:
-            return this.joy3l;
+            return this.status.joy3l;
 
         case 0x421d:
-            return this.joy3h;
+            return this.status.joy3h;
 
         case 0x421e:
-            return this.joy4l;
+            return this.status.joy4l;
 
         case 0x421f:
-            return this.joy4h;
+            return this.status.joy4h;
     }
 
     if ((addr & 0xff80) == 0x4300) {
@@ -154,32 +154,32 @@ SNESJS.CPU.prototype.mmio_read = function(addr) {
         }
     }
 
-    return this.regs.mdr;
+    return this.status.regs.mdr;
 }
 
 SNESJS.CPU.prototype.mmio_write = function(addr, data) {
     if ((addr & 0xffc0) == 0x2140) {
-        this.synchronize_smp();
-        this.port_write((addr & 3), data);
+        this.status.synchronize_smp();
+        this.status.port_write((addr & 3), data);
         return;
     }
 
     switch (addr & 0xffff) {
         case 0x2180:
-            this.snes.bus.write(new uint24(0x7e0000 | this.wram_addr), data);
-            this.wram_addr = (this.wram_addr + 1) & 0x01ffff;
+            this.snes.bus.write(new uint24(0x7e0000 | this.status.wram_addr), data);
+            this.status.wram_addr = (this.status.wram_addr + 1) & 0x01ffff;
             return;
 
         case 0x2181:
-            this.wram_addr = (this.wram_addr & 0x01ff00) | (data << 0);
+            this.status.wram_addr = (this.status.wram_addr & 0x01ff00) | (data << 0);
             return;
 
         case 0x2182:
-            this.wram_addr = (this.wram_addr & 0x0100ff) | (data << 8);
+            this.status.wram_addr = (this.status.wram_addr & 0x0100ff) | (data << 8);
             return;
 
         case 0x2183:
-            this.wram_addr = (this.wram_addr & 0x00ffff) | ((data & 1) << 16);
+            this.status.wram_addr = (this.status.wram_addr & 0x00ffff) | ((data & 1) << 16);
             return;
 
         case 0x4016:
@@ -188,74 +188,74 @@ SNESJS.CPU.prototype.mmio_write = function(addr, data) {
             return;
 
         case 0x4200:
-            var nmi_enabled = this.nmi_enabled;
-            var virq_enabled = this.virq_enabled;
-            var hirq_enabled = this.hirq_enabled;
+            var nmi_enabled = this.status.nmi_enabled;
+            var virq_enabled = this.status.virq_enabled;
+            var hirq_enabled = this.status.hirq_enabled;
 
-            this.nmi_enabled = (data & 0x80) != 0;
-            this.virq_enabled = (data & 0x20) != 0;
-            this.hirq_enabled = (data & 0x10) != 0;
-            this.auto_joypad_poll_enabled = (data & 0x01) != 0;
+            this.status.nmi_enabled = (data & 0x80) != 0;
+            this.status.virq_enabled = (data & 0x20) != 0;
+            this.status.hirq_enabled = (data & 0x10) != 0;
+            this.status.auto_joypad_poll_enabled = (data & 0x01) != 0;
 
-            if (!nmi_enabled && this.nmi_enabled && this.nmi_line) {
-                this.nmi_transition = true;
+            if (!nmi_enabled && this.status.nmi_enabled && this.status.nmi_line) {
+                this.status.nmi_transition = true;
             }
 
-            if (this.virq_enabled && !this.hirq_enabled && this.irq_line) {
-                this.irq_transition = true;
+            if (this.status.virq_enabled && !this.status.hirq_enabled && this.status.irq_line) {
+                this.status.irq_transition = true;
             }
 
-            if (!this.virq_enabled && !this.hirq_enabled) {
-                this.irq_line = false;
-                this.irq_transition = false;
+            if (!this.status.virq_enabled && !this.status.hirq_enabled) {
+                this.status.irq_line = false;
+                this.status.irq_transition = false;
             }
 
-            this.irq_lock = true;
+            this.status.irq_lock = true;
             return;
 
         case 0x4201:
-            if ((this.pio & 0x80) != 0 && (data & 0x80) == 0) {
+            if ((this.status.pio & 0x80) != 0 && (data & 0x80) == 0) {
                 this.snes.ppu.latch_counters();
             }
-            this.pio = data;
+            this.status.pio = data;
 
         case 0x4202:
-            this.wrmpya = data;
+            this.status.wrmpya = data;
             return;
 
         case 0x4203:
-            this.wrmpyb = data;
-            this.rdmpy = (this.wrmpya * this.wrmpyb);
+            this.status.wrmpyb = data;
+            this.status.rdmpy = (this.status.wrmpya * this.status.wrmpyb);
             return;
 
         case 0x4204:
-            this.wrdiva = ((this.wrdiva & 0xff00) | (data << 0));
+            this.status.wrdiva = ((this.status.wrdiva & 0xff00) | (data << 0));
             return;
 
         case 0x4205:
-            this.wrdiva = ((data << 8) | (this.wrdiva & 0x00ff));
+            this.status.wrdiva = ((data << 8) | (this.status.wrdiva & 0x00ff));
             return;
 
         case 0x4206:
-            this.wrdivb = data;
-            this.rddiv = ((this.wrdivb != 0) ? this.wrdiva / this.wrdivb : 0xffff);
-            this.rdmpy = ((this.wrdivb != 0) ? this.wrdiva % this.wrdivb : this.wrdiva);
+            this.status.wrdivb = data;
+            this.status.rddiv = ((this.status.wrdivb != 0) ? this.status.wrdiva / this.status.wrdivb : 0xffff);
+            this.status.rdmpy = ((this.status.wrdivb != 0) ? this.status.wrdiva % this.status.wrdivb : this.status.wrdiva);
             return;
 
         case 0x4207:
-            this.htime = ((this.htime & 0x0100) | (data << 0));
+            this.status.htime = ((this.status.htime & 0x0100) | (data << 0));
             return;
 
         case 0x4208:
-            this.htime = (((data & 1) << 8) | (this.htime & 0x00ff));
+            this.status.htime = (((data & 1) << 8) | (this.status.htime & 0x00ff));
             return;
 
         case 0x4209:
-            this.vtime = ((this.vtime & 0x0100) | (data << 0));
+            this.status.vtime = ((this.status.vtime & 0x0100) | (data << 0));
             return;
 
         case 0x420a:
-            this.vtime = (((data & 1) << 8) | (this.vtime & 0x00ff));
+            this.status.vtime = (((data & 1) << 8) | (this.status.vtime & 0x00ff));
             return;
 
         case 0x420b:
@@ -274,7 +274,7 @@ SNESJS.CPU.prototype.mmio_write = function(addr, data) {
             return;
 
         case 0x420d:
-            this.rom_speed = (data & 1) != 0 ? 6 : 8;
+            this.status.rom_speed = (data & 1) != 0 ? 6 : 8;
             return;
     }
 

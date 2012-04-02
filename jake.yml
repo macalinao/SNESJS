@@ -24,6 +24,7 @@ packages:
     - cpu/Channel
     - cpu/CPUOPS
     - cpu/DMA
+    - cpu/Memory
     - cpu/MMIO
     - cpu/Registers
     - cpu/Status
