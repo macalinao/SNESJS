@@ -42,10 +42,10 @@ SNESJS.CPU.prototype.last_cycle = function() {
     this.status.nmi_pending = true;
   }
 
-  if(this.status.irq_transition || regs.irq) {
-    regs.wai = false;
+  if(this.status.irq_transition || this.regs.irq) {
+    this.regs.wai = false;
     this.status.irq_transition = false;
-    this.status.irq_pending = !regs.p.i;
+    this.status.irq_pending = !this.regs.p.i;
   }
 }
 

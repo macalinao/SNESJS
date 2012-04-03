@@ -16,7 +16,7 @@
  */
 
 SNESJS.CPU.prototype.op_readpc = function() {
-  return this.this.op_read((this.regs.pc.b << 16) + this.regs.pc.w++);
+  return this.op_read((this.regs.pc.b << 16) + this.regs.pc.w++);
 }
 
 SNESJS.CPU.prototype.op_readstack = function() {
@@ -118,7 +118,7 @@ SNESJS.CPU.prototype.op_io = function() {
 }
 
 SNESJS.CPU.prototype.op_read = function(addr) {
-  this.this.regs.mdr = this.snes.bus.read(addr);
+  this.regs.mdr = this.snes.bus.read(addr);
   this.add_clocks(speed(addr));
   return this.regs.mdr;
 }

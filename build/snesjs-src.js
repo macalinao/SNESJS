@@ -1558,7 +1558,7 @@ SNESJS.CPU.prototype.dma_reset = function() {
  */
 
 SNESJS.CPU.prototype.op_readpc = function() {
-  return this.this.op_read((this.regs.pc.b << 16) + this.regs.pc.w++);
+  return this.op_read((this.regs.pc.b << 16) + this.regs.pc.w++);
 }
 
 SNESJS.CPU.prototype.op_readstack = function() {
@@ -1660,7 +1660,7 @@ SNESJS.CPU.prototype.op_io = function() {
 }
 
 SNESJS.CPU.prototype.op_read = function(addr) {
-  this.this.regs.mdr = this.snes.bus.read(addr);
+  this.regs.mdr = this.snes.bus.read(addr);
   this.add_clocks(speed(addr));
   return this.regs.mdr;
 }
@@ -2241,10 +2241,10 @@ SNESJS.CPU.prototype.last_cycle = function() {
     this.status.nmi_pending = true;
   }
 
-  if(this.status.irq_transition || regs.irq) {
-    regs.wai = false;
+  if(this.status.irq_transition || this.regs.irq) {
+    this.regs.wai = false;
     this.status.irq_transition = false;
-    this.status.irq_pending = !regs.p.i;
+    this.status.irq_pending = !this.regs.p.i;
   }
 }
 
@@ -2371,6 +2371,73 @@ SNESJS.CPU.prototype.run_auto_joypad_poll = function() {
 
   this.status.joy4l = joy4;
   this.status.joy4h = joy4 >> 8;
+}
+
+
+SNESJS.Bus = function() {
+  lookup = new uint8 [16 * 1024 * 1024];
+  target = new uint32[16 * 1024 * 1024];
+}
+
+SNESJS.Bus.prototype.mirror = function( addr,  size) {
+   base = 0;
+  if(size) {
+     mask = 1 << 23;
+    while(addr >= size) {
+      while(!(addr & mask)) mask >>= 1;
+      addr -= mask;
+      if(size > mask) {
+        size -= mask;
+        base += mask;
+      }
+      mask >>= 1;
+    }
+    base += addr;
+  }
+  return base;
+}
+
+SNESJS.Bus.prototype.map = function(
+  MapMode::e mode,
+   bank_lo,  bank_hi,
+   addr_lo,  addr_hi,
+  const function<uint8 ()> &rd,
+  const function<void (, uint8)> &wr,
+   base,  length
+) {
+  assert(bank_lo <= bank_hi && bank_lo <= 0xff);
+  assert(addr_lo <= addr_hi && addr_lo <= 0xffff);
+   id = idcount++;
+  assert(id < 255);
+  reader[id] = rd;
+  writer[id] = wr;
+
+  if(length == 0) length = (bank_hi - bank_lo + 1) * (addr_hi - addr_lo + 1);
+
+   offset = 0;
+  for( bank = bank_lo; bank <= bank_hi; bank++) {
+    for( addr = addr_lo; addr <= addr_hi; addr++) {
+       destaddr = (bank << 16) | addr;
+      if(mode == MapMode::Linear) destaddr = mirror(base + offset++, length);
+      if(mode == MapMode::Shadow) destaddr = mirror(base + destaddr, length);
+      lookup[(bank << 16) | addr] = id;
+      target[(bank << 16) | addr] = destaddr;
+    }
+  }
+}
+
+SNESJS.Bus.prototype.map_reset = function() {
+  function<uint8 ()> reader(bus_reader_dummy);
+  function<void (, uint8)> writer(bus_writer_dummy);
+
+  idcount = 0;
+  map(MapMode::Direct, 0x00, 0xff, 0x0000, 0xffff, reader, writer);
+}
+
+SNESJS.Bus.prototype.map_xml = function() {
+  foreach(m, cartridge.mapping) {
+    map(m.mode.i, m.banklo, m.bankhi, m.addrlo, m.addrhi, m.read, m.write, m.offset, m.size);
+  }
 }
 
 
