@@ -15,7 +15,12 @@
  * along with SNESJS.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-SNESJS.Bus = function() {
+SNESJS.Bus = function(snes) {
+  this.snes = snes;
+
+  this.reader = [];
+  this.writer = [];
+
   this.lookup = [];
   this.target = [];
 }
@@ -98,7 +103,7 @@ SNESJS.Bus.prototype.map_reset = function() {
 }
 
 SNESJS.Bus.prototype.map_xml = function() {
-  for (var i = 0; i < this.snes.cartridge.mapping.length, i++) {
+  for (var i = 0; i < this.snes.cartridge.mapping.length; i++) {
     var m = this.snes.cartridge.mapping[i];
     map(m.mode.i, m.banklo, m.bankhi, m.addrlo, m.addrhi, m.read, m.write, m.offset, m.size);
   }
