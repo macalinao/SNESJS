@@ -31,7 +31,8 @@ packages:
     - cpu/Status
     - cpu/Timing
     # Memory
-    - memory/Memory
+    - memory/Bus
+    - memory/MapMode
     # Util
     - util/Bits
     - util/MiscUtils
