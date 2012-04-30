@@ -61,3 +61,16 @@ SNESJS.CPU.prototype.op_irq = function() {
   this.regs.pc.w = this.rd.w;
 }
 
+SNESJS.CPU.prototype.opcode_length = function(){
+	var op, len;
+
+	op = this.dreadb(this.regs.pc.d);
+	len = SNESJS.CPU.OPS._op_len_tbl[op];
+	if (len == 5) {
+		return (this.regs.e || this.regs.p.m) ? 2 : 3;
+	}
+	if (len == 6) {
+		return (this.regs.e || this.regs.p.x) ? 2 : 3;
+	}
+	return len;
+}

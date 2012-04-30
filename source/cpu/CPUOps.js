@@ -518,7 +518,160 @@ SNESJS.CPU.prototype.opXFI = function(id, name, fn, x) {
 	};
 }
 
+SNESJS.CPU.OPS._op_len_tbl = [
+//0, 1, 2, 3, 4, 5, 6, 7, 8, 9, a, b, c, d, e, f
+2, 2, 2, 2, 2, 2, 2, 2, 1, 5, 1, 1, 3, 3, 3, 4, //0x0n
+2, 2, 2, 2, 2, 2, 2, 2, 1, 3, 1, 1, 3, 3, 3, 4, //0x1n
+3, 2, 4, 2, 2, 2, 2, 2, 1, 5, 1, 1, 3, 3, 3, 4, //0x2n
+2, 2, 2, 2, 2, 2, 2, 2, 1, 3, 1, 1, 3, 3, 3, 4, //0x3n
+1, 2, 2, 2, 3, 2, 2, 2, 1, 5, 1, 1, 3, 3, 3, 4, //0x4n
+2, 2, 2, 2, 3, 2, 2, 2, 1, 3, 1, 1, 4, 3, 3, 4, //0x5n
+1, 2, 3, 2, 2, 2, 2, 2, 1, 5, 1, 1, 3, 3, 3, 4, //0x6n
+2, 2, 2, 2, 2, 2, 2, 2, 1, 3, 1, 1, 3, 3, 3, 4, //0x7n
+2, 2, 3, 2, 2, 2, 2, 2, 1, 5, 1, 1, 3, 3, 3, 4, //0x8n
+2, 2, 2, 2, 2, 2, 2, 2, 1, 3, 1, 1, 3, 3, 3, 4, //0x9n
+6, 2, 6, 2, 2, 2, 2, 2, 1, 5, 1, 1, 3, 3, 3, 4, //0xan
+2, 2, 2, 2, 2, 2, 2, 2, 1, 3, 1, 1, 3, 3, 3, 4, //0xbn
+6, 2, 2, 2, 2, 2, 2, 2, 1, 5, 1, 1, 3, 3, 3, 4, //0xcn
+2, 2, 2, 2, 2, 2, 2, 2, 1, 3, 1, 1, 3, 3, 3, 4, //0xdn
+6, 2, 2, 2, 2, 2, 2, 2, 1, 5, 1, 1, 3, 3, 3, 4, //0xen
+2, 2, 2, 2, 3, 2, 2, 2, 1, 3, 1, 1, 3, 3, 3, 4 //0xfn
+];
+
 SNESJS.CPU.OPS = {
+	// Misc ops
+	nop: function(cpu) {
+		cpu.last_cycle();
+		cpu.op_io_irq();
+	},
+
+	wdm: function(cpu) {
+		cpu.last_cycle();
+		cpu.op_readpc();
+	},
+
+	xba: function(cpu) {
+		cpu.op_io();
+		cpu.last_cycle();
+		cpu.op_io();
+		// Swap
+		cpu.regs.a.l ^= cpu.regs.a.h;
+		cpu.regs.a.h ^= cpu.regs.a.l;
+		cpu.regs.a.l ^= cpu.regs.a.h;
+
+		cpu.regs.p.n = (cpu.regs.a.l & 0x80) != 0;
+		cpu.regs.p.z = cpu.regs.a.l == 0;
+	},
+
+	move_b: function(cpu, adjust) {
+		cpu.dp = cpu.op_readpc();
+		cpu.sp = cpu.op_readpc();
+		cpu.regs.db = cpu.dp;
+		cpu.rd.l = cpu.op_readlong((cpu.sp << 16) | regs.x.w);
+		cpu.op_writelong((cpu.dp << 16) | cpu.regs.y.w, cpu.rd.l);
+		cpu.op_io();
+		cpu.regs.x.l += adjust;
+		cpu.regs.y.l += adjust;
+
+		cpu.last_cycle();
+		cpu.op_io();
+
+		if (cpu.regs.a.w-- != 0) {
+			cpu.regs.pc.w -= 3;
+		}
+	},
+
+	move_w: function(cpu, adjust) {
+		cpu.dp = cpu.op_readpc();
+		cpu.sp = cpu.op_readpc();
+		cpu.regs.db = cpu.dp;
+		cpu.rd.l = cpu.op_readlong((cpu.sp << 16) | regs.x.w);
+		cpu.op_writelong((cpu.dp << 16) | cpu.regs.y.w, cpu.rd.l);
+		cpu.op_io();
+		cpu.regs.x.w += adjust;
+		cpu.regs.y.w += adjust;
+
+		cpu.last_cycle();
+		cpu.op_io();
+
+		if (cpu.regs.a.w-- != 0) {
+			cpu.regs.pc.w -= 3;
+		}
+	},
+
+	interrupt_e: function(cpu, vectorE, vectorN) {
+		cpu.op_readpc();
+
+		cpu.op_writestack(cpu.regs.pc.h);
+		cpu.op_writestack(cpu.regs.pc.l);
+		cpu.op_writestack(cpu.regs.p);
+
+		cpu.rd.l = cpu.op_readlong(vectorE + 0);
+
+		cpu.regs.pc.b = 0;
+		cpu.regs.p.i = 1;
+		cpu.regs.p.d = 0;
+
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readlong(vectorE + 1);
+
+		cpu.regs.pc.w = cpu.rd.w;
+	},
+
+	interrupt_n: function(cpu, vectorE, vectorN) {
+		cpu.op_readpc();
+
+		cpu.op_writestack(cpu.regs.pc.h);
+		cpu.op_writestack(cpu.regs.pc.l);
+		cpu.op_writestack(cpu.regs.p);
+
+		cpu.rd.l = cpu.op_readlong(vectorN + 0);
+
+		cpu.regs.pc.b = 0;
+		cpu.regs.p.i = 1;
+		cpu.regs.p.d = 0;
+
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readlong(vectorN + 1);
+
+		cpu.regs.pc.w = cpu.rd.w;
+	},
+
+	stp: function(cpu) {
+		cpu.regs.wai = true;
+		while (cpu.regs.wai) {
+			cpu.last_cycle();
+			cpu.op_io();
+		}
+	},
+
+	xce: function(cpu) {
+		cpu.last_cycle();
+		cpu.op_io_irq();
+
+		var carry = cpu.regs.p.c;
+		cpu.regs.p.c = cpu.regs.e;
+		cpu.regs.e = carry;
+
+		if (cpu.regs.e) {
+			cpu.regs.p |= 0x30;
+			cpu.regs.s.h = 0x01;
+		}
+
+		if (regs.p.x) {
+			cpu.regs.x.h = 0x00;
+			cpu.regs.y.h = 0x00;
+		}
+
+		cpu.update_table();
+	},
+
+	flag: function(cpu, mask, value) {
+		cpu.last_cycle();
+		cpu.op_io_irq();
+
+		cpu.regs.p = (cpu.regs.p & ~mask) | value;
+	},
 
 	branch: function(cpu, bit, val) {
 		if ((cpu.regs.p & bit) != val) {
