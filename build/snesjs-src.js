@@ -1347,6 +1347,76 @@ SNESJS.CPU.OPS = {
 		cpu.update_table();
 	},
 
+	pea_e: function(cpu) {
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
+
+		cpu.op_writestackn(cpu.aa.h);
+		cpu.last_cycle();
+		cpu.op_writestackn(cpu.aa.l);
+
+		cpu.regs.s.h = 0x01;
+	},
+
+	pea_n: function(cpu) {
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
+
+		cpu.op_writestackn(cpu.aa.h);
+		cpu.last_cycle();
+		cpu.op_writestackn(cpu.aa.l);
+	},
+
+	pei_e: function(cpu) {
+		cpu.dp = cpu.op_readpc();
+		cpu.op_io_cond2();
+
+		cpu.aa.l = cpu.op_readdp(cpu.dp + 0);
+		cpu.aa.h = cpu.op_readdp(cpu.dp + 1);
+
+		cpu.op_writestackn(cpu.aa.h);
+		cpu.last_cycle();
+		cpu.op_writestackn(cpu.aa.l);
+	},
+
+	pei_n: function(cpu) {
+		cpu.dp = cpu.op_readpc();
+		cpu.op_io_cond2();
+
+		cpu.aa.l = cpu.op_readdp(cpu.dp + 0);
+		cpu.aa.h = cpu.op_readdp(cpu.dp + 1);
+
+		cpu.op_writestackn(cpu.aa.h);
+		cpu.last_cycle();
+		cpu.op_writestackn(cpu.aa.l);
+
+		cpu.regs.s.h = 0x01;
+	},
+
+	per_e: function(cpu) {
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
+		cpu.op_io();
+		cpu.rd.w = cpu.regs.pc.d + cpu.aa.w;
+		cpu.op_writestackn(cpu.rd.h);
+
+		cpu.last_cycle();
+		cpu.op_writestackn(cpu.rd.l);
+
+		cpu.regs.s.h = 0x01;
+	},
+
+	per_n: function(cpu) {
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
+		cpu.op_io();
+		cpu.rd.w = cpu.regs.pc.d + cpu.aa.w;
+		cpu.op_writestackn(cpu.rd.h);
+
+		cpu.last_cycle();
+		cpu.op_writestackn(cpu.rd.l);
+	},
+
 	// PC ops
 	branch: function(cpu, bit, val) {
 		if ((cpu.regs.p & bit) != val) {
