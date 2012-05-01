@@ -1109,6 +1109,245 @@ SNESJS.CPU.OPS = {
 		cpu.regs.p = (cpu.regs.p & ~mask) | value;
 	},
 
+	pflag_e: function(cpu, mode) {
+		cpu.rd.l = cpu.op_readpc();
+
+		cpu.last_cycle();
+		cpu.op_io();
+
+		cpu.regs.p = (mode ? cpu.regs.p | cpu.rd.l : cpu.regs.p & ~cpu.rd.l);
+		cpu.regs.p.assign(cpu.regs.p | 0x30);
+
+		if (cpu.regs.p.x) {
+			cpu.regs.x.h = 0x00;
+			cpu.regs.y.h = 0x00;
+		}
+
+		cpu.update_table();
+	},
+
+	pflag_n: function(cpu, mode) {
+		cpu.rd.l = cpu.op_readpc();
+
+		cpu.last_cycle();
+		cpu.op_io();
+
+		cpu.regs.p = (mode ? cpu.regs.p | cpu.rd.l : cpu.regs.p & ~cpu.rd.l);
+
+		if (cpu.regs.p.x) {
+			cpu.regs.x.h = 0x00;
+			cpu.regs.y.h = 0x00;
+		}
+
+		cpu.update_table();
+	},
+
+	transfer_b: function(cpu, from, to) {
+		cpu.last_cycle();
+		cpu.op_io_irq();
+
+		cpu.regs.r[to].l = cpu.regs.r[from].l;
+		cpu.regs.p.n = (cpu.regs.r[to].l & 0x8000);
+		cpu.regs.p.z = (cpu.regs.r[to].l == 0);
+	},
+
+	transfer_w: function(cpu, from, to) {
+		cpu.last_cycle();
+		cpu.op_io_irq();
+
+		cpu.regs.r[to].w = cpu.regs.r[from].w;
+		cpu.regs.p.n = (cpu.regs.r[to].w & 0x8000);
+		cpu.regs.p.z = (cpu.regs.r[to].w == 0);
+	},
+
+	tcs_e: function(cpu) {
+		cpu.last_cycle();
+		cpu.op_io_irq();
+
+		cpu.regs.s.l = cpu.regs.a.l;
+	},
+
+	tcs_n: function(cpu) {
+		cpu.last_cycle();
+		cpu.op_io_irq();
+
+		cpu.regs.s.w = cpu.regs.a.w;
+	},
+
+	tsx_b: function(cpu) {
+		cpu.last_cycle();
+		cpu.op_io_irq();
+
+		cpu.regs.x.l = cpu.regs.s.l;
+		cpu.regs.p.n = (cpu.regs.x.l & 0x80) != 0;
+		cpu.regs.p.z = cpu.regs.x.l == 0;
+	},
+
+	tsx_w: function(cpu) {
+		cpu.last_cycle();
+		cpu.op_io_irq();
+
+		cpu.regs.x.w = cpu.regs.s.w;
+		cpu.regs.p.n = (cpu.regs.x.w & 0x80) != 0;
+		cpu.regs.p.z = cpu.regs.x.w == 0;
+	},
+
+	tsx_e: function(cpu) {
+		cpu.last_cycle();
+		cpu.op_io_irq();
+
+		cpu.regs.s.l = cpu.regs.x.l;
+	},
+
+	tsx_n: function(cpu) {
+		cpu.last_cycle();
+		cpu.op_io_irq();
+
+		cpu.regs.s.w = cpu.regs.x.w;
+	},
+
+	push_b: function(cpu, n) {
+		cpu.op_io();
+
+		cpu.last_cycle();
+		cpu.op_writestack(cpu.regs.r[n].l);
+	},
+
+	push_w: function(cpu, n) {
+		cpu.op_io();
+
+		cpu.op_writestack(cpu.regs.r[n].h);
+
+		cpu.last_cycle();
+		cpu.op_writestack(cpu.regs.r[n].l);
+	},
+
+	phd_e: function(cpu) {
+		cpu.op_io();
+
+		cpu.op_writestackn(cpu.regs.d.h);
+		cpu.op_writestackn(cpu.regs.d.l);
+	},
+
+	phd_n: function(cpu) {
+		cpu.op_io();
+
+		cpu.op_writestackn(cpu.regs.d.h);
+
+		cpu.last_cycle();
+		cpu.op_writestackn(cpu.regs.d.l);
+	},
+
+	phb: function(cpu) {
+		cpu.op_io();
+
+		cpu.last_cycle();
+		cpu.op_writestack(cpu.regs.db);
+	},
+
+	phk: function(cpu) {
+		cpu.op_io();
+
+		cpu.last_cycle();
+		cpu.op_writestack(cpu.regs.pc.b);
+	},
+
+	php: function(cpu) {
+		cpu.op_io();
+
+		cpu.last_cycle();
+		cpu.op_writestack(cpu.regs.p);
+	},
+
+	pull_b: function(cpu, n) {
+		cpu.op_io();
+		cpu.op_io();
+
+		cpu.last_cycle();
+		cpu.regs.r[n].l = cpu.op_readstack();
+
+		cpu.regs.p.n = (cpu.regs.r[n].l & 0x80) != 0;
+		cpu.regs.p.z = (cpu.regs.r[n].l == 0);
+	},
+
+	pull_w: function(cpu, n) {
+		cpu.op_io();
+		cpu.op_io();
+
+		cpu.last_cycle();
+		cpu.regs.r[n].l = cpu.op_readstack();
+
+		cpu.regs.p.n = (cpu.regs.r[n].w & 0x8000) != 0;
+		cpu.regs.p.z = (cpu.regs.r[n].w == 0);
+	},
+
+	pld_e: function(cpu) {
+		cpu.op_io();
+		cpu.op_io();
+
+		cpu.regs.d.l = cpu.op_readstackn();
+
+		cpu.last_cycle();
+		cpu.regs.d.h = cpu.op_readstackn();
+
+		cpu.regs.p.n = (cpu.regs.d.w & 0x8000) != 0;
+		cpu.regs.p.z = (cpu.regs.d.w == 0);
+		cpu.regs.s.h = 0x01;
+	},
+
+	pld_n: function(cpu) {
+		cpu.op_io();
+		cpu.op_io();
+
+		cpu.regs.d.l = cpu.op_readstackn();
+
+		cpu.last_cycle();
+		cpu.regs.d.h = cpu.op_readstackn();
+
+		cpu.regs.p.n = (cpu.regs.d.w & 0x8000) != 0;
+		cpu.regs.p.z = (cpu.regs.d.w == 0);
+	},
+
+	plb: function(cpu) {
+		cpu.op_io();
+		cpu.op_io();
+
+		cpu.last_cycle();
+		cpu.op_readstack();
+
+		cpu.regs.p.n = (cpu.regs.db & 0x80) != 0;
+		cpu.regs.p.z = (cpu.regs.db == 0);
+	},
+
+	plp_e: function(cpu) {
+		cpu.op_io();
+		cpu.op_io();
+
+		cpu.last_cycle();
+		cpu.regs.p = cpu.op_readstack() | 0x30;
+		if (cpu.regs.p.x) {
+			cpu.regs.x.h = 0x00;
+			cpu.regs.y.h = 0x00;
+		}
+
+		cpu.update_table();
+	},
+
+	plp_n: function(cpu) {
+		cpu.op_io();
+		cpu.op_io();
+
+		cpu.last_cycle();
+		cpu.regs.p = cpu.op_readstack();
+		if (cpu.regs.p.x) {
+			cpu.regs.x.h = 0x00;
+			cpu.regs.y.h = 0x00;
+		}
+
+		cpu.update_table();
+	},
+
+	// PC ops
 	branch: function(cpu, bit, val) {
 		if ((cpu.regs.p & bit) != val) {
 			cpu.last_cycle();
