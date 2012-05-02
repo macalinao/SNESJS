@@ -1069,270 +1069,139 @@ SNESJS.CPU.OPS = {
 	},
 
 	jsr_long_e: function(cpu) {
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
 
-	},
-
-	jsr_long_n: function(cpu) {
-
-	},
-
-	jsr_iaddrx_e: function(cpu) {
-
-	},
-
-	jsr_iaddrx_n: function(cpu) {
-
-	},
-
-	rti_e: function(cpu) {
-
-	},
-
-	rti_n: function(cpu) {
-
-	},
-
-	rts: function(cpu) {
-
-	},
-
-	rtl_e: function(cpu) {
-
-	},
-
-	rtl_n: function(cpu) {
-
-	},
-
-	nop: function(cpu) {
-		cpu.last_cycle();
-		cpu.op_io_irq();
-	},
-
-	wdm: function(cpu) {
-		cpu.last_cycle();
-		cpu.op_readpc();
-	},
-
-	xba: function(cpu) {
+		cpu.op_writestackn(cpu.regs.pc.b);
 		cpu.op_io();
+
+		cpu.aa.b = cpu.op_readpc();
+		cpu.regs.pc.w--;
+
+		cpu.op_writestackn(cpu.regs.pc.h);
 		cpu.last_cycle();
-		cpu.op_io();
-		cpu.regs.a.l ^= cpu.regs.a.h;
-		cpu.regs.a.h ^= cpu.regs.a.l;
-		cpu.regs.a.l ^= cpu.regs.a.h;
-		cpu.regs.p.n = (cpu.regs.a.l & 0x80) == 0x80;
-		cpu.regs.p.z = (cpu.regs.a.l == 0);
-	},
+		cpu.op_writestackn(cpu.regs.pc.l);
 
-	move_b: function(cpu, adjust) {
-		cpu.dp = cpu.op_readpc();
-		cpu.sp = cpu.op_readpc();
-		cpu.regs.db = cpu.dp;
-		cpu.rd.l = cpu.op_readlong((cpu.sp << 16) | cpu.regs.x.w);
-		cpu.op_writelong(((cpu.dp << 16) | cpu.regs.y.w), cpu.rd.l);
-		cpu.op_io();
-		cpu.regs.x.l += adjust;
-		cpu.regs.y.l += adjust;
-		cpu.last_cycle();
-		cpu.op_io();
-		if (cpu.regs.a.w-- == 0x01) {
-			cpu.regs.pc.w -= 3;
-		}
-	},
-
-	move_w: function(cpu, adjust) {
-		cpu.dp = cpu.op_readpc();
-		cpu.sp = cpu.op_readpc();
-		cpu.regs.db = cpu.dp;
-		cpu.rd.l = cpu.op_readlong((cpu.sp << 16) | cpu.regs.x.w);
-		cpu.op_writelong((cpu.dp << 16) | cpu.regs.y.w, cpu.rd.l);
-		cpu.op_io();
-		cpu.regs.x.w += cpu.adjust;
-		cpu.regs.y.w += cpu.adjust;
-		cpu.last_cycle();
-		cpu.op_io();
-		if (regs.a.w-- == 0x01) {
-			regs.pc.w -= 3;
-		}
-	},
-
-	interrupt_e: function(cpu, vectorE, vectorN) {
-		cpu.op_readpc();
-		cpu.op_writestack(cpu.regs.pc.h);
-		cpu.op_writestack(cpu.regs.pc.l);
-		cpu.op_writestack(cpu.regs.p);
-		cpu.rd.l = cpu.op_readlong(vectorE + 0);
-		cpu.regs.pc.b = 0x00;
-		cpu.regs.p.i = true;
-		cpu.regs.p.d = false;
-		cpu.last_cycle();
-		cpu.rd.h = cpu.op_readlong(vectorE + 1);
-		cpu.regs.pc.w = rd.w;
-	},
-
-	interrupt_n: function(cpu, vectorE, vectorN) {
-		cpu.op_readpc();
-		cpu.op_writestack(cpu.regs.pc.h);
-		cpu.op_writestack(cpu.regs.pc.l);
-		cpu.op_writestack(cpu.regs.p);
-		op_writestack(regs.p);
-		cpu.rd.l = cpu.op_readlong(vectorN + 0);
-		cpu.regs.pc.b = 0x00;
-		cpu.regs.p.i = true;
-		cpu.regs.p.d = false;
-		cpu.last_cycle();
-		cpu.rd.h = cpu.op_readlong(vectorN + 1);
-		cpu.regs.pc.w = rd.w;
-	},
-
-	stp: function(cpu) {
-		cpu.regs.wai = true;
-		while (cpu.regs.wai) {
-			cpu.last_cycle();
-			cpu.op_io();
-		}
-	},
-
-	wai: function(cpu) {
-		cpu.regs.wai = true;
-		while (cpu.regs.wai) {
-			cpu.last_cycle();
-			cpu.op_io();
-		}
-		cpu.op_io();
-	},
-
-	xce: function(cpu) {
-		cpu.last_cycle();
-		cpu.op_io_irq();
-		var carry = cpu.regs.p.c; //Switch c with e
-		cpu.regs.p.c = cpu.regs.e;
-		cpu.regs.e = carry;
-		if (cpu.regs.e) {
-			cpu.regs.p.assign(cpu.regs.p | 0x30);
-			cpu.regs.s.h = 0x01;
-		}
-		if (cpu.regs.p.x) {
-			cpu.regs.x.h = 0x00;
-			cpu.regs.y.h = 0x00;
-		}
-		cpu.update_table();
-	},
-
-	flag: function(cpu, mask, value) {
-		cpu.last_cycle();
-		cpu.op_io_irq();
-		cpu.regs.p.assign((regs.p & ~mask) | value);
-	},
-
-	pflag_e: function(cpu, mode) {
-		cpu.rd.l = cpu.op_readpc();
-		cpu.last_cycle();
-		cpu.op_io();
-		cpu.regs.p.assign((mode == 0x1) ? cpu.regs.p | cpu.rd.l : cpu.regs.p & ~rd.l);
-		cpu.regs.p.assign(cpu.regs.p | 0x30);
-		if (cpu.regs.p.x) {
-			cpu.regs.x.h = 0x00;
-			cpu.regs.y.h = 0x00;
-		}
-		cpu.update_table();
-	},
-
-	pflag_n: function(cpu, mode) {
-		cpu.rd.l = cpu.op_readpc();
-		cpu.last_cycle();
-		cpu.op_io();
-		cpu.regs.p.assign((mode == 0x1) ? cpu.regs.p | cpu.rd.l : cpu.regs.p & ~rd.l);
-		if (cpu.regs.p.x) {
-			cpu.regs.x.h = 0x00;
-			cpu.regs.y.h = 0x00;
-		}
-		cpu.update_table();
-	},
-
-	transfer_b: function(cpu, from, to) {
-		cpu.last_cycle();
-		cpu.op_io_irq();
-		cpu.regs.r[to].l = cpu.regs.r[from].l;
-		cpu.regs.p.n = (cpu.regs.r[to].l & 0x80) == 0x80;
-		cpu.regs.p.z = (cpu.regs.r[to].l == 0);
-	},
-
-	transfer_w: function(cpu, from, to) {
-		cpu.last_cycle();
-		cpu.op_io_irq();
-		cpu.regs.r[to].w = cpu.regs.r[from].w;
-		cpu.regs.p.n = (regs.r[to].w & 0x8000) == 0x8000;
-		cpu.regs.p.z = regs.r[to].w == 0;
-	},
-
-	tcs_e: function(cpu) {
-		cpu.last_cycle();
-		cpu.op_io_irq();
-		cpu.regs.s.l = cpu.regs.a.l;
-	},
-
-	tcs_n: function(cpu) {
-		cpu.last_cycle();
-		cpu.op_io_irq();
-		cpu.regs.s.w = cpu.regs.a.w;
-	},
-
-	tsx_b: function(cpu) {
-		cpu.last_cycle();
-		cpu.op_io_irq();
-		cpu.regs.x.l = cpu.regs.s.l;
-		cpu.regs.p.n = (cpu.regs.x.l & 0x80) == 0x80;
-		cpu.regs.p.z = cpu.regs.x.l == 0;
-	},
-
-	tsx_w: function(cpu) {
-		cpu.last_cycle();
-		cpu.op_io_irq();
-		cpu.regs.x.w = cpu.regs.s.w;
-		cpu.regs.p.n = (cpu.regs.x.w & 0x8000) == 0x8000;
-		cpu.regs.p.z = cpu.regs.x.w == 0;
-	},
-
-	txs_e: function(cpu) {
-		cpu.last_cycle();
-		cpu.op_io_irq();
-		cpu.regs.s.l = cpu.regs.x.l;
-	},
-
-	txs_n: function(cpu) {
-		cpu.last_cycle();
-		cpu.op_io_irq();
-		cpu.regs.s.w = cpu.regs.x.w;
-	},
-
-	push_b: function(cpu, n) {
-		cpu.op_io();
-		cpu.last_cycle();
-		cpu.op_writestack(cpu.regs.r[n].l);
-	},
-
-	push_w: function(cpu, n) {
-		cpu.op_io();
-		cpu.op_writestack(regs.r[n].h);
-		cpu.last_cycle();
-		cpu.op_writestack(regs.r[n].l);
-	},
-
-	phd_e: function(cpu) {
-		cpu.op_io();
-		cpu.op_writestackn(cpu.regs.d.h);
-		cpu.last_cycle();
-		cpu.op_writestackn(cpu.regs.d.l);
+		cpu.regs.pc.d = cpu.aa.d & 0xffffff;
 		cpu.regs.s.h = 0x01;
 	},
 
-	phd_n: function(cpu) {
-		cpu.op_io();
-		cpu.op_writestackn(cpu.regs.d.h);
-		cpu.last_cycle();
-		cpu.op_writestackn(cpu.regs.d.l);
-	}
+	jsr_long_n: function(cpu) {
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
 
+		cpu.op_writestackn(cpu.regs.pc.b);
+		cpu.op_io();
+
+		cpu.aa.b = cpu.op_readpc();
+		cpu.regs.pc.w--;
+
+		cpu.op_writestackn(cpu.regs.pc.h);
+		cpu.last_cycle();
+		cpu.op_writestackn(cpu.regs.pc.l);
+
+		cpu.regs.pc.d = cpu.aa.d & 0xffffff;
+	},
+
+	jsr_iaddrx_e: function(cpu) {
+		cpu.aa.l = cpu.op_readpc();
+
+		cpu.op_writestackn(cpu.regs.pc.h);
+		cpu.op_writestackn(cpu.regs.pc.l);
+
+		cpu.aa.h = cpu.op_readpc();
+		cpu.op_io();
+
+		cpu.rd.l = cpu.op_readpbr(cpu.aa.w + cpu.regs.x.w + 0);
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readpbr(cpu.aa.w + cpu.regs.x.w + 1);
+
+		cpu.regs.pc.w = cpu.rd.w;
+		cpu.regs.s.h = 0x01;
+	},
+
+	jsr_iaddrx_n: function(cpu) {
+		cpu.aa.l = cpu.op_readpc();
+
+		cpu.op_writestackn(cpu.regs.pc.h);
+		cpu.op_writestackn(cpu.regs.pc.l);
+
+		cpu.aa.h = cpu.op_readpc();
+		cpu.op_io();
+
+		cpu.rd.l = cpu.op_readpbr(cpu.aa.w + cpu.regs.x.w + 0);
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readpbr(cpu.aa.w + cpu.regs.x.w + 1);
+
+		cpu.regs.pc.w = cpu.rd.w;
+	},
+
+	rti_e: function(cpu) {
+		cpu.op_io();
+		cpu.op_io();
+
+		cpu.regs.p = cpu.op_readstack() | 0x30;
+		cpu.rd.l = cpu.op_readstack();
+
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readstack();
+
+		cpu.regs.pc.w = cpu.rd.w;
+	},
+
+	rti_n: function(cpu) {
+		cpu.op_io();
+		cpu.op_io();
+
+		cpu.regs.p = cpu.op_readstack();
+		if (cpu.regs.p.x) {
+			cpu.regs.x.h = 0x00;
+			cpu.regs.y.h = 0x00;
+		}
+
+		cpu.rd.l = cpu.op_readstack();
+		cpu.rd.h = cpu.op_readstack();
+		cpu.last_cycle();
+		cpu.rd.b = cpu.op_readstack();
+
+		cpu.regs.pc.d = cpu.rd.d & 0xffffff;
+		cpu.update_table();
+	},
+
+	rts: function(cpu) {
+		cpu.op_io();
+		cpu.op_io();
+
+		cpu.rd.l = cpu.op_readstack();
+		cpu.rd.h = cpu.op_readstack();
+	},
+
+	rtl_e: function(cpu) {
+		cpu.op_io();
+		cpu.op_io();
+
+		cpu.rd.l = cpu.op_readstackn();
+		cpu.rd.h = cpu.op_readstackn();
+
+		cpu.last_cycle();
+		cpu.rd.b = cpu.op_readstackn();
+
+		cpu.regs.pc.b = cpu.rd.b;
+		cpu.regs.pc.w = ++cpu.rd.w;
+		cpu.regs.s.h = 0x01;
+	},
+
+	rtl_n: function(cpu) {
+		cpu.op_io();
+		cpu.op_io();
+
+		cpu.rd.l = cpu.op_readstackn();
+		cpu.rd.h = cpu.op_readstackn();
+
+		cpu.last_cycle();
+		cpu.rd.b = cpu.op_readstackn();
+
+		cpu.regs.pc.b = cpu.rd.b;
+		cpu.regs.pc.w = ++cpu.rd.w;
+	}
 };
