@@ -1203,5 +1203,21 @@ SNESJS.CPU.OPS = {
 
 		cpu.regs.pc.b = cpu.rd.b;
 		cpu.regs.pc.w = ++cpu.rd.w;
+	},
+
+	// Read ops
+	read_const_b: function(cpu, op) {
+		cpu.last_cycle();
+		cpu.rd.l = cpu.op_readpc();
+
+		op();
+	},
+
+	read_const_w: function(cpu, op) {
+		cpu.rd.l = cpu.op_readpc();
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readpc();
+
+		op();
 	}
 };
