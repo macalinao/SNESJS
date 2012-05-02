@@ -1219,5 +1219,127 @@ SNESJS.CPU.OPS = {
 		cpu.rd.h = cpu.op_readpc();
 
 		op();
-	}
+	},
+
+	read_bit_const_b: function(cpu, op) {
+		cpu.last_cycle();
+		cpu.rd.l = cpu.op_readpc();
+		cpu.regs.p.z = ((cpu.rd.l & cpu.regs.a.l) == 0);
+	},
+
+	read_bit_const_w: function(cpu, op) {
+		cpu.rd.l = cpu.op_readpc();
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readpc();
+		cpu.regs.p.z = ((cpu.rd.w & cpu.regs.a.w) == 0);
+	},
+
+	read_addr_b: function(cpu, op) {
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
+		cpu.last_cycle();
+		cpu.rd.l = cpu.op_readdbr(cpu.aa.w);
+		op();
+	},
+
+	read_addr_w: function(cpu, op) {
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
+		cpu.rd.l = cpu.op_readdbr(cpu.aa.w);
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readdbr(cpu.aa.w + q);
+		op();
+	},
+
+	read_addrx_b: function(cpu, op) {
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
+		cpu.op_io_cond4(cpu.aa.w, cpu.aa.w + cpu.regs.x.w);
+		cpu.last_cycle();
+		cpu.rd.l = cpu.op_readdbr(cpu.aa.w + cpu.regs.x.w);
+		op();
+	},
+
+	read_addrx_w: function(cpu, op) {
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
+		cpu.op_io_cond4(cpu.aa.w, cpu.aa.w + cpu.regs.x.w);
+		cpu.last_cycle();
+		cpu.rd.l = cpu.op_readdbr(cpu.aa.w + cpu.regs.x.w + 1);
+		op();
+	},
+
+	read_addry_b: function(cpu, op) {
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
+		cpu.op_io_cond4(cpu.aa.w, cpu.aa.w + cpu.regs.y.w);
+		cpu.last_cycle();
+		cpu.rd.l = cpu.op_readdbr(cpu.aa.w + cpu.regs.y.w);
+		op();
+	},
+
+	read_addry_w: function(cpu, op) {
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
+		cpu.op_io_cond4(cpu.aa.w, cpu.aa.w + cpu.regs.y.w);
+		cpu.rd.l = cpu.op_readdbr(cpu.aa.w + cpu.regs.y.w);
+		cpu.last_cycle();
+		cpu.rd.l = cpu.op_readdbr(cpu.aa.w + cpu.regs.y.w + 1);
+		op();
+	},
+
+	read_long_b: function(cpu, op) {
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
+		cpu.aa.b = cpu.op_readpc();
+		cpu.last_cycle();
+		cpu.rd.l = cpu.op_readlong(cpu.aa.d);
+		op();
+	},
+
+	read_long_w: function(cpu, op) {
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
+		cpu.aa.b = cpu.op_readpc();
+		cpu.rd.l = cpu.op_readlong(cpu.aa.d);
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readlong(cpu.aa.d + 1);
+		op();
+	},
+
+	read_longx_b: function(cpu, op) {
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
+		cpu.aa.b = cpu.op_readpc();
+		cpu.last_cycle();
+		cpu.rd.l = cpu.op_readlong(cpu.aa.d + cpu.regs.x.w);
+		op();
+	},
+
+	read_longx_w: function(cpu, op) {
+		cpu.aa.l = cpu.op_readpc();
+		cpu.aa.h = cpu.op_readpc();
+		cpu.aa.b = cpu.op_readpc();
+		cpu.rd.l = cpu.op_readlong(cpu.aa.d + cpu.regs.x.w);
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readlong(cpu.aa.d + cpu.regs.x.w + 1);
+		op();
+	},
+
+	read_dp_b: function(cpu, op) {
+		cpu.dp = cpu.op_readpc();
+		cpu.op_io_cond2();
+		cpu.last_cycle();
+		cpu.rd.l = cpu.op_readdp(cpu.dp);
+		op();
+	},
+
+	read_dp_w: function(cpu, op) {
+		cpu.dp = cpu.op_readpc();
+		cpu.op_io_cond2();
+		cpu.rd.l = cpu.op_readdp(cpu.dp);
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readdp(cpu.dp + 1);
+		op();
+	},
 };
