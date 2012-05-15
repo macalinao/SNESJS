@@ -1342,4 +1342,105 @@ SNESJS.CPU.OPS = {
 		cpu.rd.h = cpu.op_readdp(cpu.dp + 1);
 		op();
 	},
+
+	read_dpr_b: function(cpu, op) {
+		cpu.dp = cpu.op_readpc();
+		cpu.op_io_cond2();
+		cpu.op_io();
+
+		cpu.last_cycle();
+		cpu.rd.l = cpu.op_readdp(cpu.dp + cpu.regs.r[n].w);
+		op();
+	},
+
+	read_dpr_w: function(cpu, op) {
+		cpu.dp = cpu.op_readpc();
+		cpu.op_io_cond2();
+		cpu.op_io();
+
+		cpu.rd.l = cpu.op_readdp(cpu.dp + cpu.regs.r[n].w);
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readdp(cpu.dp + cpu.regs.r[n].w + 1);
+		op();
+	},
+
+	read_idp_b: function(cpu, op) {
+		cpu.dp = op_readpc();
+		cpu.op_io_cond2();
+		cpu.aa.l = cpu.op_readdp(dp + 0);
+		cpu.aa.h = cpu.op_readdp(dp + 1);
+		
+		cpu.last_cycle();
+		cpu.rd.l = cpu.op_readdbr(cpu.aa.w);
+		op();
+	},
+
+	read_idp_w: function(cpu, op) {
+		cpu.dp = op_readpc();
+		cpu.op_io_cond2();
+		cpu.aa.l = cpu.op_readdp(dp + 0);
+		cpu.aa.h = cpu.op_readdp(dp + 1);
+		
+		cpu.rd.l = cpu.op_readdbr(cpu.aa.w + 0)
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readdbr(cpu.aa.w + 1);
+		op();
+	},
+
+	read_idpx_b: function(cpu, op) {
+		cpu.dp = cpu.op_readpc();
+		cpu.op_io_cond2();
+		cpu.op_io();
+
+		cpu.aa.l = cpu.op_readdp(cpu.dp + cpu.regs.x.w + 0);
+		cpu.aa.h = cpu.op_readdp(cpu.dp + cpu.regs.x.w + 1);
+
+		cpu.last_cycle();
+		cpu.rd.l = cpu.op_readdbr(cpu.aa.w);
+		op();
+	},
+
+	read_idpx_w: function(cpu, op) {
+		cpu.dp = cpu.op_readpc();
+		cpu.op_io_cond2();
+		cpu.op_io();
+
+		cpu.aa.l = cpu.op_readdp(cpu.dp + cpu.regs.x.w + 0);
+		cpu.aa.h = cpu.op_readdp(cpu.dp + cpu.regs.x.w + 1);
+
+		cpu.rd.l = cpu.op_readdbr(cpu.aa.w + 0);
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readdbr(cpu.aa.w + 1);
+		op();
+	},
+
+	read_idpy_b: function(cpu, op) {
+		cpu.dp = cpu.op_readpc();
+		cpu.op_io_cond2();
+
+		cpu.aa.l = cpu.op_readdp(cpu.dp + 0);
+		cpu.aa.h = cpu.op_readdp(cpu.dp + 1);
+
+		cpu.op_io_cond4(cpu.aa.w, cpu.aa.w + cpu.regs.y.w);
+
+		cpu.last_cycle();
+		cpu.rd.l = cpu.op_readdbr(cpu.aa.w + cpu.regs.y.w);
+		op();
+	},
+
+	read_idpy_w: function(cpu, op) {
+		cpu.dp = cpu.op_readpc();
+		cpu.op_io_cond2();
+
+		cpu.aa.l = cpu.op_readdp(cpu.dp + 0);
+		cpu.aa.h = cpu.op_readdp(cpu.dp + 1);
+
+		cpu.op_io_cond4(cpu.aa.w, cpu.aa.w + cpu.regs.y.w);
+
+		cpu.rd.l = cpu.op_readdbr(cpu.aa.w + cpu.regs.y.w + 0);
+		cpu.last_cycle();
+		cpu.rd.h = cpu.op_readdbr(cpu.aa.w + cpu.regs.y.w + 1);
+		op();
+	},
+
 };
